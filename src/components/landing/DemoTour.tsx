@@ -1,15 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { 
-  InformationCircleIcon,
-  XMarkIcon,
-  ArrowRightIcon,
-  ArrowLeftIcon
+import {
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    InformationCircleIcon,
+    XMarkIcon
 } from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface TourStep {
   id: string;

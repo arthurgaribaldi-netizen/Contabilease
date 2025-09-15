@@ -1,23 +1,20 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  CalculatorIcon, 
-  ChartBarIcon, 
-  DocumentTextIcon,
-  ArrowDownTrayIcon,
-  PlayIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
 import { IFRS16CalculationEngine } from '@/lib/calculations/ifrs16-engine';
-import { IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
-import { motion, AnimatePresence } from 'framer-motion';
-import ROISimulator from './ROISimulator';
+import {
+    ArrowDownTrayIcon,
+    CalculatorIcon,
+    ChartBarIcon,
+    CheckCircleIcon,
+    ExclamationTriangleIcon,
+    PlayIcon
+} from '@heroicons/react/24/outline';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
 import DemoTour from './DemoTour';
+import ROISimulator from './ROISimulator';
 
 // Dados fictícios para demonstração
 const DEMO_CONTRACTS = [

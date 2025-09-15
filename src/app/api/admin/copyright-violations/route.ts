@@ -7,10 +7,10 @@
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getCopyrightViolations, reportManualViolation } from '@/lib/security/copyright-monitoring';
 import { getSessionOrRedirect } from '@/lib/auth/requireSession';
 import { logger } from '@/lib/logger';
+import { getCopyrightViolations, reportManualViolation } from '@/lib/security/copyright-monitoring';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * GET /api/admin/copyright-violations

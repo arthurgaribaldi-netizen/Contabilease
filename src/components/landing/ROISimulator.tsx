@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
-import { 
-  ClockIcon, 
-  CurrencyDollarIcon, 
-  ChartBarIcon,
-  CheckCircleIcon
+import {
+    ChartBarIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 interface ROICalculation {
   contracts_per_month: number;

@@ -12,9 +12,9 @@
 import { IFRS16CalculationEngine } from '@/lib/calculations/ifrs16-engine';
 import { logger } from '@/lib/logger';
 import {
-  ContractModificationValidationSchema,
-  type ContractModification,
-  type ContractModificationValidation,
+    ContractModificationValidationSchema,
+    type ContractModification,
+    type ContractModificationValidation,
 } from '@/lib/schemas/ifrs16-complete';
 import { IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
 import { useCallback, useEffect, useState } from 'react';
