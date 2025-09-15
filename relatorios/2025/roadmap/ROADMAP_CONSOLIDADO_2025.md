@@ -315,30 +315,26 @@ O **Contabilease** está em uma posição única: **MVP tecnicamente completo** 
 
 ## 🎯 **Recursos Necessários**
 
-### **Equipe Q1 2025**
-- **1 Desenvolvedor Full-stack** (tempo integral) - Monetização
-- **1 Desenvolvedor Frontend** (tempo integral) - UI/UX
-- **1 Designer UX** (meio período) - Design
-- **1 Product Manager** (tempo integral) - Coordenação
-- **1 Marketing Specialist** (meio período) - Marketing
+### **Equipe Q1 2025 (Realidade Atual)**
+- **1 Desenvolvedor Solo** (2h/dia hobby) - Desenvolvimento completo
+- **1 Agente AI** (gratuito) - Assistência técnica
+- **Tempo Total**: 60h/mês de desenvolvimento
 
-### **Equipe Q2-Q4 2025**
-- **2 Desenvolvedores Full-stack** (tempo integral)
-- **1 Desenvolvedor Frontend** (tempo integral)
-- **1 Desenvolvedor Backend** (tempo integral)
-- **1 Designer UX** (tempo integral)
-- **1 Product Manager** (tempo integral)
-- **1 Marketing Specialist** (tempo integral)
-- **1 Suporte ao Cliente** (tempo integral)
+### **Equipe Q2-Q4 2025 (Projeção)**
+- **1 Desenvolvedor Solo** (2h/dia hobby) - Desenvolvimento completo
+- **1 Agente AI** (gratuito) - Assistência técnica
+- **Tempo Total**: 60h/mês de desenvolvimento
+- **Escalabilidade**: Limitada pelo tempo disponível
 
-### **Orçamento Anual**
+### **Orçamento Anual (Realidade Atual)**
 | Categoria | Valor | Período |
 |-----------|-------|---------|
-| **Pessoal** | R$ 1.200.000 | 12 meses |
-| **Marketing** | R$ 300.000 | 12 meses |
-| **Infraestrutura** | R$ 120.000 | 12 meses |
-| **Ferramentas** | R$ 50.000 | 12 meses |
-| **Total** | R$ 1.670.000 | 12 meses |
+| **Pessoal** | R$ 0 | Hobby |
+| **Agente AI** | R$ 0 | Gratuito |
+| **Infraestrutura** | R$ 0 | Gratuito (Vercel/Supabase) |
+| **Ferramentas** | R$ 0 | Gratuito |
+| **Tempo de Desenvolvimento** | 2h/dia | 60h/mês |
+| **Total** | R$ 0 | Projeto Hobby |
 
 ---
 
@@ -406,10 +402,11 @@ O Contabilease possui **excelente base técnica** com conformidade IFRS 16 compl
 ### **Recomendação Principal**
 **IMPLEMENTAR MONETIZAÇÃO IMEDIATAMENTE** - Sistema de pagamento em 30 dias, lançamento beta em 60 dias, lançamento público em 90 dias.
 
-### **Meta Realista**
+### **Meta Realista (Projeto Hobby)**
 - **Ano 1**: R$ 125k de receita (700 usuários pagos)
-- **Break-even**: Agosto 2025
-- **ROI**: 200%+ em 24 meses
+- **Break-even**: Imediato (sem investimento inicial)
+- **ROI**: ∞% (investimento zero com potencial de receita)
+- **Tempo de Desenvolvimento**: 2h/dia (60h/mês)
 
 ### **Próxima Revisão**
 - **Data**: 15 de Fevereiro 2025

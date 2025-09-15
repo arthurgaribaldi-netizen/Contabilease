@@ -390,20 +390,21 @@ export function ReferralProgram() {
 
 **Receita Anual Projetada**: R$ 5.4 milhões (+350% vs. projeção atual)
 
-### **ROI do Investimento**
+### **ROI do Investimento (Realidade Atual)**
 
 | Investimento | Valor | Período |
 |--------------|-------|---------|
-| **Desenvolvimento** | R$ 180k | 3 meses |
-| **Marketing** | R$ 300k | 12 meses |
-| **Ferramentas** | R$ 50k | 12 meses |
-| **Total** | R$ 530k | 12 meses |
+| **Desenvolvimento** | R$ 0 | Hobby |
+| **Agente AI** | R$ 0 | Gratuito |
+| **Tempo de Desenvolvimento** | 2h/dia | 60h/mês |
+| **Infraestrutura** | R$ 0 | Gratuito |
+| **Total** | R$ 0 | Projeto Hobby |
 
 | Retorno | Valor | ROI |
 |---------|-------|-----|
-| **Receita Ano 1** | R$ 5.4M | 920% |
-| **Payback Period** | 2.1 meses | - |
-| **LTV:CAC Ratio** | 8:1 | Excelente |
+| **Receita Ano 1** | R$ 5.4M | ∞% |
+| **Payback Period** | Imediato | - |
+| **LTV:CAC Ratio** | ∞:1 | Excelente |
 
 ---
 
@@ -461,12 +462,13 @@ O **Contabilease** possui uma base sólida para monetização, mas precisa de ot
 - **Fase 2**: 8 semanas (funcionalidades avançadas)
 - **Fase 3**: 12 semanas (escala e crescimento)
 
-### **Investimento Total Recomendado**
+### **Investimento Total Recomendado (Realidade Atual)**
 
-- **Custo**: R$ 530.000 (12 meses)
-- **ROI**: 920% em 12 meses
-- **Payback**: 2.1 meses
+- **Custo**: R$ 0 (projeto hobby sem custos diretos)
+- **ROI**: ∞% (investimento zero com potencial de receita)
+- **Payback**: Imediato (sem investimento inicial)
 - **Potencial**: R$ 5.4M de receita anual
+- **Tempo de Desenvolvimento**: 2h/dia (60h/mês)
 
 ---
 
