@@ -192,7 +192,7 @@ export default function OptimizedContractList({
       <ConfirmationModal
         isOpen={!!deleteConfirm}
         onConfirm={handleDeleteConfirm}
-        onCancel={handleDeleteCancel}
+        onClose={handleDeleteCancel}
         title="Confirmar Exclusão"
         message="Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita."
       />
