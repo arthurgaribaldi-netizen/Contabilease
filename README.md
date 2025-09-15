@@ -13,6 +13,26 @@ Sistema especializado em cálculos automáticos de contratos de leasing conforme
 **Conformidade IFRS 16**: ✅ **100% Compliant** (Cálculos)  
 **Cobertura de Testes**: ⚠️ **67.5%** (146 testes passando, 1 falhando)  
 **Qualidade**: ⚠️ **Necessita Melhorias Urgentes**
+**Scripts Supabase**: ✅ **Melhorados e Otimizados**
+
+## 🚀 Scripts de Migração Melhorados
+
+O projeto agora possui **scripts de migração otimizados** que resolvem conflitos e seguem as melhores práticas:
+
+### Scripts Disponíveis:
+- `000_base_migration.sql` - Funções base e configurações comuns
+- `001_core_tables_consolidated.sql` - Tabelas principais consolidadas
+- `002_rls_policies_optimized.sql` - Políticas RLS otimizadas
+- `003_initial_data_and_validations.sql` - Dados iniciais e validações
+
+### Principais Melhorias:
+- ✅ **Conflitos Resolvidos**: Scripts 4 e 5 consolidados
+- ✅ **Performance Otimizada**: Índices RLS e políticas eficientes
+- ✅ **Validações Automáticas**: Triggers de validação de dados
+- ✅ **Auditoria Completa**: Rastreamento de mudanças
+- ✅ **Tratamento de Erros**: Funções robustas com fallback
+
+**📖 Consulte o `GUIA_IMPLEMENTACAO_SCRIPTS_MELHORADOS.md` e `MIGRATION_GUIDE_DEVELOPERS.md` para detalhes completos.**
 
 ### ✅ Implementado (Funcional)
 - [x] Estrutura Next.js 14 com TypeScript e App Router
