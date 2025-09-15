@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Verifica se a mensagem de commit segue o padrão
+commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}'
+
+if ! grep -qE "$commit_regex" "$1"; then
+    echo "❌ Formato de commit inválido!"
+    echo ""
+    echo "📝 Formato esperado:"
+    echo "  <tipo>(<escopo>): <descrição>"
+    echo ""
+    echo "🔧 Tipos válidos:"
+    echo "  feat:     Nova funcionalidade"
+    echo "  fix:      Correção de bug"
+    echo "  docs:     Documentação"
+    echo "  style:    Formatação, sem mudança de código"
+    echo "  refactor: Refatoração de código"
+    echo "  test:     Adição ou correção de testes"
+    echo "  chore:    Mudanças em ferramentas, configurações"
+    echo "  perf:     Melhoria de performance"
+    echo "  ci:       Mudanças em CI/CD"
+    echo "  build:    Mudanças no sistema de build"
+    echo "  revert:   Reversão de commit"
+    echo ""
+    echo "📋 Exemplos:"
+    echo "  feat(auth): adicionar login com Google"
+    echo "  fix(ui): corrigir layout responsivo"
+    echo "  docs: atualizar README"
+    echo "  chore: atualizar dependências"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Formato de commit válido!"

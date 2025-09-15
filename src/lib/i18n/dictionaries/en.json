@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "contracts": "Contracts",
+    "transactions": "Transactions",
+    "categories": "Categories",
+    "reports": "Reports",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password",
+    "rememberMe": "Remember Me",
+    "loginSuccess": "Login successful",
+    "loginError": "Login error",
+    "registerSuccess": "Registration successful",
+    "registerError": "Registration error",
+    "logoutSuccess": "Logout successful"
+  },
+  "dashboard": {
+    "welcome": "Welcome to Contabilease",
+    "totalBalance": "Total Balance",
+    "monthlyIncome": "Monthly Income",
+    "monthlyExpenses": "Monthly Expenses",
+    "recentTransactions": "Recent Transactions",
+    "quickActions": "Quick Actions"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "addTransaction": "Add Transaction",
+    "editTransaction": "Edit Transaction",
+    "deleteTransaction": "Delete Transaction",
+    "amount": "Amount",
+    "description": "Description",
+    "category": "Category",
+    "date": "Date",
+    "type": "Type",
+    "income": "Income",
+    "expense": "Expense",
+    "transfer": "Transfer"
+  },
+  "categories": {
+    "title": "Categories",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "deleteCategory": "Delete Category",
+    "name": "Name",
+    "color": "Color",
+    "icon": "Icon",
+    "parentCategory": "Parent Category"
+  },
+  "reports": {
+    "title": "Reports",
+    "monthlyReport": "Monthly Report",
+    "yearlyReport": "Yearly Report",
+    "categoryReport": "Category Report",
+    "incomeVsExpenses": "Income vs Expenses",
+    "trends": "Trends"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "account": "Account",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "language": "Language",
+    "currency": "Currency",
+    "dateFormat": "Date Format",
+    "timezone": "Timezone"
+  },
+  "contracts": {
+    "title": "Contracts",
+    "addContract": "New Contract",
+    "editContract": "Edit Contract",
+    "deleteContract": "Delete Contract",
+    "contractTitle": "Contract Title",
+    "status": "Status",
+    "currency": "Currency",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "actions": "Actions",
+    "noContracts": "No contracts found",
+    "createFirstContract": "Create your first leasing contract",
+    "statusDraft": "Draft",
+    "statusActive": "Active",
+    "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled",
+    "viewDetails": "View Details",
+    "calculateIFRS": "Calculate IFRS 16"
+  },
+  "errors": {
+    "pageNotFound": "Page not found",
+    "serverError": "Internal server error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "validationError": "Validation error",
+    "networkError": "Network error"
+  }
+}

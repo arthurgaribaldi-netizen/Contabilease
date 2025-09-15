@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage - Portuguese (Brazil) - Primary -->
+  <url>
+    <loc>https://contabilease.com/pt-BR/</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://contabilease.com/en/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://contabilease.com/es/" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://contabilease.com/pt-BR/" />
+  </url>
+  
+  <!-- Homepage - English -->
+  <url>
+    <loc>https://contabilease.com/en/</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://contabilease.com/en/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://contabilease.com/es/" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://contabilease.com/pt-BR/" />
+  </url>
+  
+  <!-- Homepage - Spanish -->
+  <url>
+    <loc>https://contabilease.com/es/</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://contabilease.com/en/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://contabilease.com/es/" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://contabilease.com/pt-BR/" />
+  </url>
+
+  <!-- Authentication Pages - Portuguese -->
+  <url>
+    <loc>https://contabilease.com/pt-BR/auth/login</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://contabilease.com/pt-BR/auth/signup</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Authentication Pages - English -->
+  <url>
+    <loc>https://contabilease.com/en/auth/login</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://contabilease.com/en/auth/signup</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Authentication Pages - Spanish -->
+  <url>
+    <loc>https://contabilease.com/es/auth/login</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://contabilease.com/es/auth/signup</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Demo Pages - Portuguese -->
+  <url>
+    <loc>https://contabilease.com/pt-BR/ifrs16-demo</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://contabilease.com/pt-BR/contract-modifications-demo</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Demo Pages - English -->
+  <url>
+    <loc>https://contabilease.com/en/ifrs16-demo</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://contabilease.com/en/contract-modifications-demo</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Demo Pages - Spanish -->
+  <url>
+    <loc>https://contabilease.com/es/ifrs16-demo</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://contabilease.com/es/contract-modifications-demo</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- API Health Check (for monitoring) -->
+  <url>
+    <loc>https://contabilease.com/api/health</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

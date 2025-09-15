@@ -1,0 +1,9 @@
+// Constants for amortization table components
+export const AMORTIZATION_CONSTANTS = {
+  DEFAULT_ITEMS_PER_PAGE: 12,
+  MAX_PAGINATION_BUTTONS: 5,
+  PAGINATION_OFFSET: 4,
+  DECIMAL_PLACES: 4,
+  CACHE_TTL_MINUTES: 5,
+  CLEANUP_INTERVAL_MINUTES: 10,
+} as const;

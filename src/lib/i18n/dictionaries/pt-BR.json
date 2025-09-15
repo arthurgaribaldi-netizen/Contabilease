@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar"
+  },
+  "navigation": {
+    "home": "Início",
+    "dashboard": "Dashboard",
+    "contracts": "Contratos",
+    "transactions": "Transações",
+    "categories": "Categorias",
+    "reports": "Relatórios",
+    "settings": "Configurações",
+    "profile": "Perfil",
+    "logout": "Sair"
+  },
+  "auth": {
+    "login": "Entrar",
+    "register": "Cadastrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "forgotPassword": "Esqueci minha senha",
+    "rememberMe": "Lembrar de mim",
+    "loginSuccess": "Login realizado com sucesso",
+    "loginError": "Erro ao fazer login",
+    "registerSuccess": "Cadastro realizado com sucesso",
+    "registerError": "Erro ao cadastrar",
+    "logoutSuccess": "Logout realizado com sucesso"
+  },
+  "dashboard": {
+    "welcome": "Bem-vindo ao Contabilease",
+    "totalBalance": "Saldo Total",
+    "monthlyIncome": "Receita Mensal",
+    "monthlyExpenses": "Despesas Mensais",
+    "recentTransactions": "Transações Recentes",
+    "quickActions": "Ações Rápidas"
+  },
+  "transactions": {
+    "title": "Transações",
+    "addTransaction": "Adicionar Transação",
+    "editTransaction": "Editar Transação",
+    "deleteTransaction": "Excluir Transação",
+    "amount": "Valor",
+    "description": "Descrição",
+    "category": "Categoria",
+    "date": "Data",
+    "type": "Tipo",
+    "income": "Receita",
+    "expense": "Despesa",
+    "transfer": "Transferência"
+  },
+  "categories": {
+    "title": "Categorias",
+    "addCategory": "Adicionar Categoria",
+    "editCategory": "Editar Categoria",
+    "deleteCategory": "Excluir Categoria",
+    "name": "Nome",
+    "color": "Cor",
+    "icon": "Ícone",
+    "parentCategory": "Categoria Pai"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "monthlyReport": "Relatório Mensal",
+    "yearlyReport": "Relatório Anual",
+    "categoryReport": "Relatório por Categoria",
+    "incomeVsExpenses": "Receitas vs Despesas",
+    "trends": "Tendências"
+  },
+  "settings": {
+    "title": "Configurações",
+    "general": "Geral",
+    "account": "Conta",
+    "notifications": "Notificações",
+    "privacy": "Privacidade",
+    "language": "Idioma",
+    "currency": "Moeda",
+    "dateFormat": "Formato de Data",
+    "timezone": "Fuso Horário"
+  },
+  "contracts": {
+    "title": "Contratos",
+    "addContract": "Novo Contrato",
+    "editContract": "Editar Contrato",
+    "deleteContract": "Excluir Contrato",
+    "contractTitle": "Título do Contrato",
+    "status": "Status",
+    "currency": "Moeda",
+    "createdAt": "Criado em",
+    "updatedAt": "Atualizado em",
+    "actions": "Ações",
+    "noContracts": "Nenhum contrato encontrado",
+    "createFirstContract": "Crie seu primeiro contrato de leasing",
+    "statusDraft": "Rascunho",
+    "statusActive": "Ativo",
+    "statusCompleted": "Concluído",
+    "statusCancelled": "Cancelado",
+    "viewDetails": "Ver Detalhes",
+    "calculateIFRS": "Calcular IFRS 16"
+  },
+  "errors": {
+    "pageNotFound": "Página não encontrada",
+    "serverError": "Erro interno do servidor",
+    "unauthorized": "Não autorizado",
+    "forbidden": "Acesso negado",
+    "validationError": "Erro de validação",
+    "networkError": "Erro de conexão"
+  }
+}

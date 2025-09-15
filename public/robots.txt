@@ -1,0 +1,48 @@
+# Robots.txt for Contabilease
+# Generated: 2025-01-15
+
+User-agent: *
+Allow: /
+
+# Allow all search engines to crawl the site
+Allow: /pt-BR/
+Allow: /en/
+Allow: /es/
+Allow: /api/health
+
+# Disallow sensitive areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /dashboard/
+Disallow: /contracts/
+Disallow: /auth/verify/
+
+# Disallow private user areas (these require authentication)
+Disallow: /pt-BR/dashboard/
+Disallow: /pt-BR/contracts/
+Disallow: /pt-BR/auth/verify/
+Disallow: /en/dashboard/
+Disallow: /en/contracts/
+Disallow: /en/auth/verify/
+Disallow: /es/dashboard/
+Disallow: /es/contracts/
+Disallow: /es/auth/verify/
+
+# Allow demo pages (public content)
+Allow: /pt-BR/ifrs16-demo
+Allow: /pt-BR/contract-modifications-demo
+Allow: /en/ifrs16-demo
+Allow: /en/contract-modifications-demo
+Allow: /es/ifrs16-demo
+Allow: /es/contract-modifications-demo
+
+# Crawl delay (optional - be respectful)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://contabilease.com/sitemap.xml
+
+# Additional sitemaps for different content types (if needed in future)
+# Sitemap: https://contabilease.com/blog-sitemap.xml
+# Sitemap: https://contabilease.com/products-sitemap.xml

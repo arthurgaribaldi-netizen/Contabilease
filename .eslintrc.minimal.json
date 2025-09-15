@@ -1,0 +1,149 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "react", "react-hooks", "jsx-a11y"],
+  "rules": {
+    // Regras críticas apenas
+    "prefer-const": "warn",
+    "no-var": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+    "no-console": "off",
+    "no-debugger": "error",
+    "no-alert": "error",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    "no-script-url": "error",
+
+    // Desabilitar regras TypeScript restritivas
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/prefer-optional-chain": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/prefer-as-const": "off",
+    "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/await-thenable": "off",
+    "@typescript-eslint/no-misused-promises": "off",
+
+    // Desabilitar regras de qualidade restritivas
+    "complexity": "off",
+    "max-depth": "off",
+    "max-lines": "off",
+    "max-lines-per-function": "off",
+    "max-params": "off",
+    "max-nested-callbacks": "off",
+    "no-magic-numbers": "off",
+    "prefer-template": "off",
+    "object-shorthand": "off",
+    "prefer-arrow-callback": "off",
+    "arrow-spacing": "off",
+    "no-duplicate-imports": "off",
+    "no-useless-rename": "off",
+    "prefer-destructuring": "off",
+
+    // Regras React específicas - apenas críticas
+    "react/jsx-key": "error",
+    "react/no-children-prop": "error",
+    "react/jsx-no-duplicate-props": "error",
+    "react/jsx-no-undef": "error",
+    "react/no-danger-with-children": "error",
+    "react/no-deprecated": "error",
+    "react/no-direct-mutation-state": "error",
+    "react/no-find-dom-node": "error",
+    "react/no-is-mounted": "error",
+    "react/no-render-return-value": "error",
+    "react/no-string-refs": "error",
+    "react/no-unescaped-entities": "error",
+    "react/no-unknown-property": "off",
+    "react/no-unsafe": "error",
+    "react/require-render-return": "error",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/jsx-boolean-value": "off",
+    "react/jsx-curly-brace-presence": "off",
+    "react/jsx-fragments": "off",
+    "react/jsx-no-useless-fragment": "off",
+    "react/jsx-pascal-case": "off",
+    "react/no-array-index-key": "off",
+    "react/no-unstable-nested-components": "off",
+    "react/self-closing-comp": "off",
+
+    // Regras de acessibilidade - apenas críticas
+    "jsx-a11y/alt-text": "warn",
+    "jsx-a11y/anchor-has-content": "warn",
+    "jsx-a11y/anchor-is-valid": "warn",
+    "jsx-a11y/aria-props": "warn",
+    "jsx-a11y/aria-proptypes": "warn",
+    "jsx-a11y/aria-unsupported-elements": "warn",
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/heading-has-content": "warn",
+    "jsx-a11y/html-has-lang": "warn",
+    "jsx-a11y/img-redundant-alt": "warn",
+    "jsx-a11y/no-access-key": "warn",
+    "jsx-a11y/no-redundant-roles": "warn",
+    "jsx-a11y/role-has-required-aria-props": "warn",
+    "jsx-a11y/role-supports-aria-props": "warn",
+    "jsx-a11y/scope": "warn",
+    "jsx-a11y/tabindex-no-positive": "warn"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/__tests__/**/*"
+      ],
+      "rules": {
+        "no-console": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "no-magic-numbers": "off",
+        "max-lines-per-function": "off",
+        "@typescript-eslint/no-floating-promises": "off"
+      }
+    },
+    {
+      "files": [
+        "**/*.config.js",
+        "**/*.config.ts",
+        "jest.config.js",
+        "next.config.js",
+        "tailwind.config.js"
+      ],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "src/components/error/**/*",
+        "src/lib/performance/**/*",
+        "src/middleware/**/*",
+        "src/components/accessibility/**/*"
+      ],
+      "rules": {
+        "no-console": "off",
+        "max-lines": "off",
+        "max-lines-per-function": "off",
+        "complexity": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/prefer-nullish-coalescing": "off",
+        "@typescript-eslint/no-floating-promises": "off"
+      }
+    }
+  ]
+}

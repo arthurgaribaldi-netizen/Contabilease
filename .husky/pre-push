@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Executar verificações completas antes do push
+echo "🚀 Executando verificações completas antes do push..."
+
+# Build de produção
+echo "🏗️ Testando build de produção..."
+npm run build
+
+# Verificação completa de qualidade
+echo "🔍 Executando verificação completa de qualidade..."
+npm run quality-check
+
+# Verificação de cobertura de testes
+echo "📊 Verificando cobertura de testes..."
+npm run test:coverage
+
+echo "✅ Todas as verificações passaram! Push permitido."

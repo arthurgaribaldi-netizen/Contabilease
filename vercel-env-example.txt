@@ -1,0 +1,95 @@
+# Vercel Environment Variables Configuration
+# Copy these variables to your Vercel project settings
+
+# ===========================================
+# SUPABASE CONFIGURATION
+# ===========================================
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+SUPABASE_JWT_SECRET=your_supabase_jwt_secret
+
+# ===========================================
+# APPLICATION CONFIGURATION
+# ===========================================
+NEXT_PUBLIC_APP_URL=https://contabilease.vercel.app
+NEXTAUTH_SECRET=your_nextauth_secret_minimum_32_characters
+NEXTAUTH_URL=https://contabilease.vercel.app
+JWT_SECRET=your-super-secret-jwt-key-here-minimum-32-characters
+
+# ===========================================
+# STRIPE CONFIGURATION
+# ===========================================
+STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_your_stripe_publishable_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+
+# Stripe Price IDs (Production)
+STRIPE_BASIC_PRICE_ID=price_your_basic_price_id
+STRIPE_PROFESSIONAL_PRICE_ID=price_your_professional_price_id
+STRIPE_OFFICE_PRICE_ID=price_your_office_price_id
+
+# ===========================================
+# GOOGLE OAUTH CONFIGURATION
+# ===========================================
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# ===========================================
+# SECURITY CONFIGURATION
+# ===========================================
+ENABLE_ZERO_TRUST_AUTH=true
+ENABLE_ENHANCED_SECURITY=true
+ENABLE_ADVANCED_RATE_LIMITING=true
+ENABLE_INPUT_VALIDATION=true
+ENABLE_SECURITY_AUDIT=true
+
+# Rate Limiting
+RATE_LIMIT_DISTRIBUTED=false
+
+# Security Headers
+ENABLE_CSP=true
+CSP_REPORT_ONLY=false
+ENABLE_HSTS=true
+HSTS_MAX_AGE=31536000
+
+# Zero Trust Configuration
+ZERO_TRUST_SESSION_TIMEOUT=30
+ZERO_TRUST_MAX_CONCURRENT_SESSIONS=3
+ZERO_TRUST_TRUST_SCORE_THRESHOLD=50
+ZERO_TRUST_ENABLE_MFA=true
+ZERO_TRUST_ENABLE_DEVICE_TRUST=true
+ZERO_TRUST_ENABLE_LOCATION_VERIFICATION=true
+ZERO_TRUST_ENABLE_BEHAVIORAL_ANALYSIS=true
+
+# ===========================================
+# CORS CONFIGURATION
+# ===========================================
+CORS_ALLOWED_ORIGINS=https://contabilease.vercel.app,https://contabilease.com,https://www.contabilease.com
+CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,OPTIONS
+CORS_ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
+
+# ===========================================
+# MONITORING & LOGGING
+# ===========================================
+SECURITY_LOG_LEVEL=medium
+EXTERNAL_LOGGING_ENABLED=true
+LOG_RETENTION_HOURS=168
+
+# Optional: External Services
+SENTRY_DSN=your_sentry_dsn
+DATADOG_API_KEY=your_datadog_api_key
+
+# ===========================================
+# PRODUCTION OVERRIDES
+# ===========================================
+NODE_ENV=production
+SECURITY_DEBUG=false
+SECURITY_VERBOSE_LOGGING=false
+
+# ===========================================
+# VERCEL SPECIFIC
+# ===========================================
+# These are automatically set by Vercel, but can be overridden
+# VERCEL_URL=contabilease.vercel.app
+# VERCEL_ENV=production

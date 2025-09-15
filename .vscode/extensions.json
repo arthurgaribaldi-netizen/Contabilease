@@ -1,0 +1,47 @@
+{
+  "recommendations": [
+    // Essenciais para desenvolvimento
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    
+    // Qualidade de código
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    "ms-vscode.vscode-markdown",
+    
+    // Git e versionamento
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    
+    // Testes
+    "firsttris.vscode-jest-runner",
+    "ms-vscode.test-adapter-converter",
+    
+    // Produtividade
+    "ms-vscode.vscode-typescript-next",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    "ms-vscode.vscode-json",
+    
+    // React específico
+    "dsznajder.es7-react-js-snippets",
+    "ms-vscode.vscode-typescript-next",
+    
+    // Acessibilidade
+    "deque-systems.vscode-axe-linter",
+    
+    // Documentação
+    "yzhang.markdown-all-in-one",
+    "shd101wyy.markdown-preview-enhanced",
+    
+    // Temas e ícones
+    "pkief.material-icon-theme",
+    "zhuangtongfa.material-theme"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript",
+    "hookyqr.beautify"
+  ]
+}
