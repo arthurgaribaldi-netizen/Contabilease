@@ -1,3 +1,12 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary Contabilease software components.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 import { CACHE_TTL, ifrs16Cache } from '@/lib/cache/ifrs16-cache';
 import { BasicIFRS16Calculator } from '@/lib/calculations/ifrs16-basic';
 import { supabase } from '@/lib/supabase';

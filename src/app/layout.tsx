@@ -149,7 +149,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <CriticalCSS />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased contabilease-app`}>
         <ResourcePreloader />
         <AccessibilityProvider>
           <ThemeProvider>{children}</ThemeProvider>

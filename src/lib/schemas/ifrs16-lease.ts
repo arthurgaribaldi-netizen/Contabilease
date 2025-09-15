@@ -1,3 +1,12 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary IFRS 16 schema definitions and validation rules.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 import { z } from 'zod';
 
 // Base lease contract schema for IFRS 16 calculations

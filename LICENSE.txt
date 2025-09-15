@@ -1,0 +1,98 @@
+COPYRIGHT NOTICE AND PROPRIETARY LICENSE AGREEMENT
+
+© 2025 Contabilease. All rights reserved.
+
+PROPRIETARY SOFTWARE LICENSE AGREEMENT
+
+This software and associated documentation files (the "Software") are the exclusive 
+property of Contabilease ("Company") and are protected by copyright laws and other 
+intellectual property laws.
+
+IMPORTANT: READ CAREFULLY BEFORE USING THIS SOFTWARE
+
+This is a proprietary software license agreement. By accessing, downloading, installing, 
+or using this Software, you agree to be bound by the terms of this Agreement.
+
+1. GRANT OF LICENSE
+Subject to the terms and conditions of this Agreement, Company grants you a limited, 
+non-exclusive, non-transferable license to use the Software solely for your internal 
+business purposes through the Company's web-based platform.
+
+2. RESTRICTIONS
+You may NOT:
+   a) Copy, modify, adapt, or create derivative works of the Software
+   b) Reverse engineer, decompile, disassemble, or attempt to derive the source code
+   c) Distribute, sublicense, lease, rent, or transfer the Software to any third party
+   d) Remove or alter any proprietary notices or labels on the Software
+   e) Use the Software for any unlawful purpose or in violation of any applicable laws
+   f) Attempt to gain unauthorized access to any portion of the Software
+   g) Use the Software to compete with Company or develop competing products
+   h) Extract, scrape, or mine data from the Software for commercial purposes
+
+3. INTELLECTUAL PROPERTY
+The Software contains proprietary algorithms, including but not limited to:
+   - IFRS 16 calculation engines
+   - Financial validation algorithms
+   - Lease liability computation methods
+   - Right-of-use asset calculation formulas
+   - Amortization schedule generation algorithms
+
+These algorithms are trade secrets and proprietary intellectual property of Company.
+
+4. SUBSCRIPTION TERMS
+Access to the Software is provided through subscription plans:
+   - Free Plan: Limited functionality for evaluation purposes
+   - Basic Plan: R$ 29/month - Up to 10 contracts
+   - Professional Plan: R$ 59/month - Up to 50 contracts
+   - Office Plan: R$ 99/month - Up to 200 contracts
+
+5. DATA PROTECTION
+Company implements industry-standard security measures to protect your data. 
+Your data remains your property, but you grant Company necessary rights to 
+process and store your data to provide the Software services.
+
+6. TERMINATION
+This Agreement is effective until terminated. Company may terminate this Agreement 
+immediately if you breach any terms. Upon termination, you must cease all use of 
+the Software and delete any copies.
+
+7. DISCLAIMER OF WARRANTIES
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE, AND NONINFRINGEMENT.
+
+8. LIMITATION OF LIABILITY
+IN NO EVENT SHALL COMPANY BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING OUT OF OR RELATING TO THIS AGREEMENT 
+OR THE SOFTWARE.
+
+9. COMPLIANCE WITH LAWS
+You agree to comply with all applicable laws and regulations, including but not 
+limited to data protection laws, export control laws, and intellectual property laws.
+
+10. GOVERNING LAW
+This Agreement shall be governed by and construed in accordance with the laws of 
+Brazil, without regard to conflict of law principles.
+
+11. ENTIRE AGREEMENT
+This Agreement constitutes the entire agreement between you and Company regarding 
+the Software and supersedes all prior or contemporaneous communications.
+
+12. SEVERABILITY
+If any provision of this Agreement is held to be invalid or unenforceable, the 
+remaining provisions shall remain in full force and effect.
+
+13. AMENDMENTS
+Company reserves the right to modify this Agreement at any time. Continued use of 
+the Software after modifications constitutes acceptance of the modified Agreement.
+
+14. CONTACT INFORMATION
+For questions regarding this Agreement, contact:
+Email: arthurgaribaldi@gmail.com
+Address: Brazil
+
+By using this Software, you acknowledge that you have read and understood this 
+Agreement and agree to be bound by its terms and conditions.
+
+Last updated: January 2025
+Version: 1.0

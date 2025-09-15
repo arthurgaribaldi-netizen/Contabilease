@@ -1,5 +1,10 @@
 module.exports = {
-  extends: ['next/core-web-vitals'],
+  extends: [
+    'next/core-web-vitals',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:jest/recommended',
+    'plugin:testing-library/react',
+  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.json',
@@ -10,7 +15,13 @@ module.exports = {
       jsx: true,
     },
   },
-  plugins: ['@typescript-eslint', 'jsx-a11y'],
+  plugins: ['@typescript-eslint', 'jsx-a11y', 'jest', 'testing-library'],
+  env: {
+    browser: true,
+    es2020: true,
+    node: true,
+    jest: true,
+  },
   rules: {
     // Regras críticas (Error) - Prevenção de bugs
     'prefer-const': 'error',
@@ -126,21 +137,70 @@ module.exports = {
         '**/*.spec.ts',
         '**/*.spec.tsx',
         '**/__tests__/**/*',
+        '**/test/**/*',
+        '**/tests/**/*',
+      ],
+      env: {
+        jest: true,
+        'jest/globals': true,
+      },
+      extends: [
+        'plugin:jest/recommended',
+        'plugin:testing-library/react',
       ],
       rules: {
+        // Relaxar regras para arquivos de teste
         'no-console': 'off',
+        'no-debugger': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/await-thenable': 'off',
+        '@typescript-eslint/no-misused-promises': 'off',
         'no-magic-numbers': 'off',
         'max-lines-per-function': 'off',
-        '@typescript-eslint/no-floating-promises': 'off',
+        'max-lines': 'off',
+        'complexity': 'off',
+        'max-depth': 'off',
+        'max-params': 'off',
+        'max-nested-callbacks': 'off',
+        
+        // Regras específicas do Jest
+        'jest/expect-expect': 'error',
+        'jest/no-disabled-tests': 'warn',
+        'jest/no-focused-tests': 'error',
+        'jest/no-identical-title': 'error',
+        'jest/prefer-to-have-length': 'warn',
+        'jest/valid-expect': 'error',
+        
+        // Regras específicas do Testing Library
+        'testing-library/await-async-query': 'error',
+        'testing-library/no-await-sync-query': 'error',
+        'testing-library/no-debugging-utils': 'warn',
+        'testing-library/no-dom-import': 'error',
+        'testing-library/prefer-find-by': 'error',
+        'testing-library/prefer-screen-queries': 'error',
+        'testing-library/render-result-naming-convention': 'error',
       },
     },
     {
       files: ['**/*.config.js', '**/*.config.ts', 'jest.config.js', 'next.config.js'],
+      env: {
+        node: true,
+      },
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
         'no-console': 'off',
+        'no-process-env': 'off',
+      },
+    },
+    {
+      files: ['**/*.stories.ts', '**/*.stories.tsx'],
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        'react/display-name': 'off',
       },
     },
   ],

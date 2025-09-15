@@ -66,15 +66,15 @@ describe('Stripe Integration', () => {
     it('should have correct plan configurations', () => {
       expect(SUBSCRIPTION_PLANS.FREE.name).toBe('Gratuito');
       expect(SUBSCRIPTION_PLANS.FREE.price).toBe(0);
-      expect(SUBSCRIPTION_PLANS.FREE.maxContracts).toBe(1);
+      expect(SUBSCRIPTION_PLANS.FREE.maxContracts).toBe(3);
 
       expect(SUBSCRIPTION_PLANS.BASIC.name).toBe('Básico');
       expect(SUBSCRIPTION_PLANS.BASIC.price).toBe(29);
-      expect(SUBSCRIPTION_PLANS.BASIC.maxContracts).toBe(5);
+      expect(SUBSCRIPTION_PLANS.BASIC.maxContracts).toBe(25);
 
       expect(SUBSCRIPTION_PLANS.PROFESSIONAL.name).toBe('Profissional');
       expect(SUBSCRIPTION_PLANS.PROFESSIONAL.price).toBe(59);
-      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.maxContracts).toBe(20);
+      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.maxContracts).toBe(100);
 
       expect(SUBSCRIPTION_PLANS.OFFICE.name).toBe('Escritório');
       expect(SUBSCRIPTION_PLANS.OFFICE.price).toBe(99);
@@ -90,7 +90,7 @@ describe('Stripe Integration', () => {
       expect(SUBSCRIPTION_PLANS.BASIC.features).toContain('modifications');
 
       expect(SUBSCRIPTION_PLANS.PROFESSIONAL.features).toContain('custom_reports');
-      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.features).toContain('phone_support');
+      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.features).toContain('api_access');
 
       expect(SUBSCRIPTION_PLANS.OFFICE.features).toContain('api_access');
       expect(SUBSCRIPTION_PLANS.OFFICE.features).toContain('white_label');
@@ -104,14 +104,14 @@ describe('Stripe Integration', () => {
       const basicPlan = SUBSCRIPTION_PLANS.BASIC;
 
       // Test contract limits
-      expect(freePlan.maxContracts).toBe(1);
-      expect(basicPlan.maxContracts).toBe(5);
+      expect(freePlan.maxContracts).toBe(3);
+      expect(basicPlan.maxContracts).toBe(25);
 
       // Test user limits
       expect(freePlan.maxUsers).toBe(1);
       expect(basicPlan.maxUsers).toBe(1);
-      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.maxUsers).toBe(3);
-      expect(SUBSCRIPTION_PLANS.OFFICE.maxUsers).toBe(999); // Unlimited
+      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.maxUsers).toBe(5);
+      expect(SUBSCRIPTION_PLANS.OFFICE.maxUsers).toBe(20);
     });
   });
 

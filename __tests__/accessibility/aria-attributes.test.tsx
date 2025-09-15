@@ -317,8 +317,10 @@ describe('ARIA Attributes Implementation', () => {
       const form = screen.getByRole('form');
       expect(form).toHaveAttribute('aria-label', 'Test Form');
 
-      const fieldset = screen.getByRole('group');
-      expect(fieldset).toBeInTheDocument();
+      const groups = screen.getAllByRole('group');
+      expect(groups).toHaveLength(2);
+      expect(groups[0]).toBeInTheDocument(); // fieldset
+      expect(groups[1]).toBeInTheDocument(); // form actions
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();

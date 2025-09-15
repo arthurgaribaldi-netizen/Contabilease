@@ -1,3 +1,12 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary Contabilease software components.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 
 interface PerformanceMetric {
@@ -61,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Exemplo de integração com serviço customizado
-    if (process.env.PERFORMANCE_WEBHOOK_URL) {
+    if (process.env['PERFORMANCE_WEBHOOK_URL']) {
       await sendToWebhook(processedMetrics, payload.sessionId);
     }
 
@@ -82,24 +91,24 @@ export async function POST(request: NextRequest) {
 /**
  * Envia métricas para Google Analytics 4
  */
-async function sendToGoogleAnalytics(metrics: PerformanceMetric[], sessionId: string) {
+async function sendToGoogleAnalytics(_metrics: PerformanceMetric[], _sessionId: string) {
   try {
-    const ga4Payload = {
-      client_id: sessionId,
-      events: metrics.map(metric => ({
-        name: 'web_vitals',
-        parameters: {
-          metric_name: metric.name,
-          metric_value: typeof metric.value === 'number' ? metric.value : 0,
-          metric_delta: metric.delta,
-          page_url: metric.url,
-          user_agent: metric.userAgent,
-        },
-      })),
-    };
-
     // Implementar envio para GA4
-    // await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${process.env.GOOGLE_ANALYTICS_ID}&api_secret=${process.env.GOOGLE_ANALYTICS_SECRET}`, {
+    // const ga4Payload = {
+    //   client_id: sessionId,
+    //   events: metrics.map(metric => ({
+    //     name: 'web_vitals',
+    //     parameters: {
+    //       metric_name: metric.name,
+    //       metric_value: typeof metric.value === 'number' ? metric.value : 0,
+    //       metric_delta: metric.delta,
+    //       page_url: metric.url,
+    //       user_agent: metric.userAgent,
+    //     },
+    //   })),
+    // };
+
+    // await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${process.env['GOOGLE_ANALYTICS_ID']}&api_secret=${process.env['GOOGLE_ANALYTICS_SECRET']}`, {
     //   method: 'POST',
     //   body: JSON.stringify(ga4Payload)
     // });
@@ -126,11 +135,11 @@ async function sendToWebhook(metrics: PerformanceMetric[], sessionId: string) {
       })),
     };
 
-    await fetch(process.env.PERFORMANCE_WEBHOOK_URL!, {
+    await fetch(process.env['PERFORMANCE_WEBHOOK_URL']!, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.PERFORMANCE_WEBHOOK_TOKEN}`,
+        Authorization: `Bearer ${process.env['PERFORMANCE_WEBHOOK_TOKEN']}`,
       },
       body: JSON.stringify(webhookPayload),
     });

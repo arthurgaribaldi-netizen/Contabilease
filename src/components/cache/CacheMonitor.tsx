@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { ProgressBar } from '@/components/ui/progress-bar';
 import { useCacheStats } from '@/hooks/useIFRS16Calculations';
 import { BarChart3, RefreshCw, Trash2, Zap } from 'lucide-react';
 import { useState } from 'react';
@@ -136,9 +136,10 @@ export function CacheMonitor({ className, showDetails = false }: CacheMonitorPro
             <span>Cache Hit Rate</span>
             <span>{formatPercentage(stats.hitRate)}</span>
           </div>
-          <Progress 
+          <ProgressBar 
             value={stats.hitRate} 
             className="h-2"
+            showLabel={false}
           />
         </div>
 

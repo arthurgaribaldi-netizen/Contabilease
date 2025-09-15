@@ -43,14 +43,14 @@ describe('MagicLinkForm', () => {
     
     expect(screen.getByText('Acesso Rápido')).toBeInTheDocument();
     expect(screen.getByText('Magic Link')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('seu@escritorio.com')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('seu@email.com')).toBeInTheDocument();
     expect(screen.getByText('Enviar Magic Link')).toBeInTheDocument();
   });
 
   it('validates email input', async () => {
     render(<MagicLinkForm />);
     
-    const emailInput = screen.getByPlaceholderText('seu@escritorio.com');
+    const emailInput = screen.getByPlaceholderText('seu@email.com');
     
     // Test invalid email
     fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
@@ -81,8 +81,8 @@ describe('MagicLinkForm', () => {
 
     render(<MagicLinkForm />);
     
-    const emailInput = screen.getByPlaceholderText('seu@escritorio.com');
-    const submitButton = screen.getByText('Enviar Magic Link');
+    const emailInput = screen.getByPlaceholderText('seu@email.com');
+    const submitButton = screen.getByText('Enviar Link Mágico');
     
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.click(submitButton);
@@ -117,7 +117,7 @@ describe('MagicLinkForm', () => {
 
     render(<MagicLinkForm />);
     
-    expect(screen.getByText('Erro ao enviar magic link')).toBeInTheDocument();
+    expect(screen.getByText('Erro ao enviar link mágico')).toBeInTheDocument();
   });
 
   it('shows success state after email sent', () => {
@@ -131,8 +131,8 @@ describe('MagicLinkForm', () => {
 
     render(<MagicLinkForm />);
     
-    expect(screen.getByText('Email Enviado!')).toBeInTheDocument();
-    expect(screen.getByText('Reenviar Magic Link')).toBeInTheDocument();
+    expect(screen.getByText('Link Enviado!')).toBeInTheDocument();
+    expect(screen.getByText('Tentar outro email')).toBeInTheDocument();
   });
 
   it('handles resend functionality', async () => {
@@ -147,7 +147,7 @@ describe('MagicLinkForm', () => {
 
     render(<MagicLinkForm />);
     
-    const resendButton = screen.getByText('Reenviar Magic Link');
+    const resendButton = screen.getByText('Tentar outro email');
     fireEvent.click(resendButton);
     
     await waitFor(() => {
@@ -158,16 +158,15 @@ describe('MagicLinkForm', () => {
   it('shows security indicators', () => {
     render(<MagicLinkForm />);
     
-    expect(screen.getByText('100% Seguro')).toBeInTheDocument();
-    expect(screen.getByText('Sem Senha')).toBeInTheDocument();
-    expect(screen.getByText('Instantâneo')).toBeInTheDocument();
+    expect(screen.getByText('Como funciona:')).toBeInTheDocument();
+    expect(screen.getByText('Enviamos um link seguro para seu email.')).toBeInTheDocument();
   });
 
   it('shows alternative login options', () => {
     render(<MagicLinkForm />);
     
-    expect(screen.getByText('Login tradicional')).toBeInTheDocument();
-    expect(screen.getByText('Cadastre-se')).toBeInTheDocument();
+    expect(screen.getByText('Login com Link Mágico')).toBeInTheDocument();
+    expect(screen.getByText('Digite seu email e receberá um link para fazer login sem senha')).toBeInTheDocument();
   });
 });
 

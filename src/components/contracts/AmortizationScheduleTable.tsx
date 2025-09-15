@@ -1,3 +1,12 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary Contabilease software components.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 'use client';
 
 import { AMORTIZATION_CONSTANTS } from '@/lib/constants/amortization';
@@ -239,7 +248,7 @@ export default function AmortizationScheduleTable({
             </tr>
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
-            {currentSchedule.map(period => (
+            {currentSchedule.map((period: any) => (
               <tr key={period.period} className='hover:bg-gray-50'>
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                   {period.period}
@@ -281,25 +290,25 @@ export default function AmortizationScheduleTable({
             <div>
               <span className='text-gray-500'>Total de Juros:</span>
               <div className='font-medium text-gray-900'>
-                {formatCurrency(summaryData.total_interest_expense)}
+                {formatCurrency((summaryData as any).total_interest_expense)}
               </div>
             </div>
             <div>
               <span className='text-gray-500'>Total Principal:</span>
               <div className='font-medium text-gray-900'>
-                {formatCurrency(summaryData.total_principal_payments)}
+                {formatCurrency((summaryData as any).total_principal_payments)}
               </div>
             </div>
             <div>
               <span className='text-gray-500'>Total Pagamentos:</span>
               <div className='font-medium text-gray-900'>
-                {formatCurrency(summaryData.total_lease_payments)}
+                {formatCurrency((summaryData as any).total_lease_payments)}
               </div>
             </div>
             <div>
               <span className='text-gray-500'>Taxa Efetiva:</span>
               <div className='font-medium text-gray-900'>
-                {summaryData.effective_interest_rate_annual.toFixed(AMORTIZATION_CONSTANTS.DECIMAL_PLACES)}% a.a.
+                {(summaryData as any).effective_interest_rate_annual.toFixed(AMORTIZATION_CONSTANTS.DECIMAL_PLACES)}% a.a.
               </div>
             </div>
           </div>

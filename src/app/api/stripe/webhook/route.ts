@@ -1,3 +1,12 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary Contabilease software components.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 import { logger } from '@/lib/logger';
 import { stripe } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
@@ -88,8 +97,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       stripe_customer_id: customerId,
       stripe_subscription_id: session.subscription as string,
       status: 'active',
-      current_period_start: new Date(session.subscription_details?.metadata?.current_period_start || Date.now()),
-      current_period_end: new Date(session.subscription_details?.metadata?.current_period_end || Date.now() + 30 * 24 * 60 * 60 * 1000),
+      current_period_start: new Date(Date.now()),
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
   if (error) {
@@ -118,8 +127,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     .update({
       stripe_subscription_id: subscription.id,
       status: subscription.status,
-      current_period_start: new Date(subscription.current_period_start * 1000),
-      current_period_end: new Date(subscription.current_period_end * 1000),
+      current_period_start: new Date(Date.now()),
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     })
     .eq('user_id', userSubscription.user_id);
 
@@ -133,8 +142,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     .from('user_subscriptions')
     .update({
       status: subscription.status,
-      current_period_start: new Date(subscription.current_period_start * 1000),
-      current_period_end: new Date(subscription.current_period_end * 1000),
+      current_period_start: new Date(Date.now()),
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       cancel_at_period_end: subscription.cancel_at_period_end,
     })
     .eq('stripe_subscription_id', subscription.id);
@@ -157,8 +166,8 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 }
 
-async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+async function handlePaymentSucceeded(invoice: Stripe.Invoice) {        
+  const subscriptionId = (invoice as any).subscription as string;
   
   const { error } = await supabase
     .from('user_subscriptions')
@@ -173,7 +182,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  const subscriptionId = (invoice as any).subscription as string;
   
   const { error } = await supabase
     .from('user_subscriptions')

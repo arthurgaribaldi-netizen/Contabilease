@@ -241,3 +241,26 @@ export async function calculateModificationImpact(contractId: string, modificati
     payment_change: 0,
   };
 }
+
+// IFRS 16 specific contract creation function
+export async function createIFRS16LeaseContract(data: any) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const userId = sessionData.session?.user.id;
+  if (!userId) throw new Error('User not authenticated');
+
+  const { error } = await supabase.from('contracts').insert({
+    user_id: userId,
+    title: data.title,
+    status: data.status || 'active',
+    currency_code: data.currency_code || 'BRL',
+    contract_value: data.monthly_payment || null,
+    contract_term_months: data.lease_term_months || null,
+    implicit_interest_rate: data.discount_rate_annual || null,
+    guaranteed_residual_value: data.guaranteed_residual_value || null,
+    lease_start_date: data.lease_start_date || null,
+    lease_end_date: data.lease_end_date || null,
+    payment_frequency: data.payment_frequency || 'monthly',
+  });
+
+  if (error) throw error;
+}

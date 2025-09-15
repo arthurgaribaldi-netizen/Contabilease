@@ -7,8 +7,7 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: '18'
-  PNPM_VERSION: '8'
+  NODE_VERSION: '20'
   # Environment variables validation
   REQUIRED_SECRETS: 'VERCEL_TOKEN,VERCEL_ORG_ID,VERCEL_PROJECT_ID'
 
@@ -132,7 +131,7 @@ jobs:
       - name: Run Snyk security scan
         uses: snyk/actions/node@master
         env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN || '' }}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high
         continue-on-error: true
@@ -176,15 +175,15 @@ jobs:
       - name: Validate environment variables
         run: |
           echo "Checking required secrets..."
-          if [ -z "${{ secrets.VERCEL_TOKEN || '' }}" ]; then
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
             echo "❌ VERCEL_TOKEN is not set"
             exit 1
           fi
-          if [ -z "${{ secrets.VERCEL_ORG_ID || '' }}" ]; then
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
             echo "❌ VERCEL_ORG_ID is not set"
             exit 1
           fi
-          if [ -z "${{ secrets.VERCEL_PROJECT_ID || '' }}" ]; then
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
             echo "❌ VERCEL_PROJECT_ID is not set"
             exit 1
           fi
@@ -213,9 +212,9 @@ jobs:
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN || '' }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID || '' }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID || '' }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
         continue-on-error: true
 

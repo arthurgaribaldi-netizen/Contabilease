@@ -1,297 +1,219 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary security middleware.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
+import { getClientIdentifier, checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limiting';
+import { logger } from '@/lib/logger';
 
 /**
- * Configuração de headers de segurança para o Contabilease
- * Implementa as melhores práticas de segurança web
+ * Security headers middleware
  */
-
-interface SecurityConfig {
-  csp: {
-    directives: Record<string, string[]>;
-    reportOnly?: boolean;
-  };
-  headers: Record<string, string>;
-}
-
-const securityConfig: SecurityConfig = {
-  csp: {
-    directives: {
-      'default-src': ["'self'"],
-      'script-src': [
-        "'self'",
-        "'unsafe-inline'", // Necessário para Next.js
-        "'unsafe-eval'", // Necessário para desenvolvimento
-        'https://vercel.live', // Vercel Live
-        'https://cdn.jsdelivr.net', // CDN para bibliotecas
-        'https://unpkg.com', // CDN alternativo
-      ],
-      'style-src': [
-        "'self'",
-        "'unsafe-inline'", // Necessário para Tailwind CSS
-        'https://fonts.googleapis.com',
-      ],
-      'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
-      'img-src': ["'self'", 'data:', 'https:', 'blob:'],
-      'connect-src': [
-        "'self'",
-        'https://*.supabase.co', // Supabase
-        'https://*.vercel.app', // Vercel
-        'https://vitals.vercel-insights.com', // Vercel Analytics
-        'wss://*.supabase.co', // WebSocket do Supabase
-      ],
-      'frame-src': ["'none'"],
-      'object-src': ["'none'"],
-      'base-uri': ["'self'"],
-      'form-action': ["'self'"],
-      'frame-ancestors': ["'none'"],
-      'upgrade-insecure-requests': [],
-    },
-    reportOnly: process.env.NODE_ENV === 'development',
-  },
-  headers: {
-    // Previne clickjacking
-    'X-Frame-Options': 'DENY',
-
-    // Previne MIME type sniffing
-    'X-Content-Type-Options': 'nosniff',
-
-    // Habilita XSS protection
-    'X-XSS-Protection': '1; mode=block',
-
-    // Controla referrer policy
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-
-    // Permissions Policy (anteriormente Feature Policy)
-    'Permissions-Policy': [
-      'camera=()',
-      'microphone=()',
-      'geolocation=()',
-      'payment=()',
-      'usb=()',
-      'magnetometer=()',
-      'accelerometer=()',
-      'gyroscope=()',
-      'fullscreen=(self)',
-      'picture-in-picture=()',
-    ].join(', '),
-
-    // Strict Transport Security (HTTPS only)
-    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-
-    // Cross-Origin Embedder Policy
-    'Cross-Origin-Embedder-Policy': 'require-corp',
-
-    // Cross-Origin Opener Policy
-    'Cross-Origin-Opener-Policy': 'same-origin',
-
-    // Cross-Origin Resource Policy
-    'Cross-Origin-Resource-Policy': 'same-origin',
-
-    // Cache Control para APIs
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    Pragma: 'no-cache',
-    Expires: '0',
-  },
-};
-
-/**
- * Aplica headers de segurança à resposta
- */
-export function applySecurityHeaders(response: NextResponse, request: NextRequest): NextResponse {
-  const { pathname } = request.nextUrl;
-
-  // Aplica headers básicos de segurança
-  Object.entries(securityConfig.headers).forEach(([key, value]) => {
-    response.headers.set(key, value);
-  });
-
-  // Aplica Content Security Policy
-  const cspHeader = generateCSPHeader(securityConfig.csp);
-  response.headers.set('Content-Security-Policy', cspHeader);
-
-  // Headers específicos para APIs
-  if (pathname.startsWith('/api/')) {
-    // APIs de cálculos podem ter cache controlado pelo servidor
-    if (pathname.includes('/calculate') || pathname.includes('/cache/')) {
-      response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=60');
-    } else {
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-    }
-    response.headers.set('X-API-Version', '1.0');
-  }
-
-  // Headers específicos para páginas estáticas
-  if (pathname.startsWith('/_next/static/')) {
-    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-
-  // Headers para assets
-  if (pathname.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
-    response.headers.set('Cache-Control', 'public, max-age=31536000');
-  }
-
-  return response;
-}
-
-/**
- * Gera header Content Security Policy
- */
-function generateCSPHeader(csp: SecurityConfig['csp']): string {
-  const directives = Object.entries(csp.directives)
-    .map(([directive, sources]) => {
-      if (sources.length === 0) {
-        return directive;
-      }
-      return `${directive} ${sources.join(' ')}`;
-    })
-    .join('; ');
-
-  return directives;
-}
-
-/**
- * Middleware de segurança para Next.js
- */
-export function securityMiddleware(request: NextRequest): NextResponse | null {
-  const { pathname } = request.nextUrl;
-
-  // Bloqueia acesso a arquivos sensíveis
-  if (pathname.match(/\.(env|config|log|sql|bak|backup)$/)) {
-    return new NextResponse('Forbidden', { status: 403 });
-  }
-
-  // Bloqueia acesso a diretórios sensíveis
-  if (
-    pathname.startsWith('/.git/') ||
-    pathname.startsWith('/.svn/') ||
-    pathname.startsWith('/.hg/') ||
-    pathname.startsWith('/node_modules/') ||
-    pathname.startsWith('/.next/')
-  ) {
-    return new NextResponse('Forbidden', { status: 403 });
-  }
-
-  // Rate limiting básico (implementação simples)
-  const _clientIP = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown';
-  const userAgent = request.headers.get('user-agent') || '';
-
-  // Bloqueia bots maliciosos conhecidos
-  const maliciousPatterns = [
-    /sqlmap/i,
-    /nikto/i,
-    /nmap/i,
-    /masscan/i,
-    /zap/i,
-    /burp/i,
-    /wget/i,
-    /curl/i,
-  ];
-
-  if (maliciousPatterns.some(pattern => pattern.test(userAgent))) {
-    return new NextResponse('Forbidden', { status: 403 });
-  }
-
-  return null;
-}
-
-/**
- * Configuração de CORS para APIs
- */
-export function configureCORS(response: NextResponse): NextResponse {
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'https://contabilease.vercel.app',
-    'https://contabilease.com',
-  ];
-
-  const origin = response.headers.get('origin');
-
-  if (origin && allowedOrigins.includes(origin)) {
-    response.headers.set('Access-Control-Allow-Origin', origin);
-  }
-
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+export function addSecurityHeaders(response: NextResponse): NextResponse {
+  // Prevent clickjacking
+  response.headers.set('X-Frame-Options', 'DENY');
+  
+  // Prevent MIME type sniffing
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  
+  // Enable XSS protection
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  
+  // Strict transport security (HTTPS only)
   response.headers.set(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Requested-With'
+    'Strict-Transport-Security',
+    'max-age=31536000; includeSubDomains; preload'
   );
-  response.headers.set('Access-Control-Allow-Credentials', 'true');
-  response.headers.set('Access-Control-Max-Age', '86400');
-
+  
+  // Content Security Policy
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' *.stripe.com *.supabase.co",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' *.supabase.co *.stripe.com",
+    "frame-src 'self' *.stripe.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'"
+  ].join('; ');
+  
+  response.headers.set('Content-Security-Policy', csp);
+  
+  // Referrer policy
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Permissions policy
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=()'
+  );
+  
   return response;
 }
 
 /**
- * Validação de entrada para APIs
+ * Bot detection middleware
  */
-export function validateAPIInput(
-  data: Record<string, unknown>,
-  schema: Record<string, unknown>
-): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  for (const [key, rules] of Object.entries(schema)) {
-    const value = data[key];
-
-    if (rules.required && (value === undefined || value === null || value === '')) {
-      errors.push(`${key} is required`);
-      continue;
-    }
-
-    if (value !== undefined && rules.type) {
-      if (rules.type === 'string' && typeof value !== 'string') {
-        errors.push(`${key} must be a string`);
-      } else if (rules.type === 'number' && typeof value !== 'number') {
-        errors.push(`${key} must be a number`);
-      } else if (rules.type === 'boolean' && typeof value !== 'boolean') {
-        errors.push(`${key} must be a boolean`);
-      }
-    }
-
-    if (rules.minLength && typeof value === 'string' && value.length < rules.minLength) {
-      errors.push(`${key} must be at least ${rules.minLength} characters`);
-    }
-
-    if (rules.maxLength && typeof value === 'string' && value.length > rules.maxLength) {
-      errors.push(`${key} must be at most ${rules.maxLength} characters`);
-    }
-
-    if (rules.pattern && typeof value === 'string' && !rules.pattern.test(value)) {
-      errors.push(`${key} format is invalid`);
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
+export function detectBot(request: NextRequest): boolean {
+  const userAgent = request.headers.get('user-agent') || '';
+  const botPatterns = [
+    /bot/i,
+    /crawler/i,
+    /spider/i,
+    /scraper/i,
+    /curl/i,
+    /wget/i,
+    /python/i,
+    /java/i,
+    /php/i,
+    /scrapy/i
+  ];
+  
+  return botPatterns.some(pattern => pattern.test(userAgent));
 }
 
 /**
- * Sanitização de dados de entrada
+ * IP whitelist/blacklist middleware
  */
-export function sanitizeInput(input: any): any {
-  if (typeof input === 'string') {
-    // Remove caracteres potencialmente perigosos
-    return input
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-      .replace(/javascript:/gi, '')
-      .replace(/on\w+\s*=/gi, '')
-      .trim();
+export function checkIPAccess(request: NextRequest): { allowed: boolean; reason?: string } {
+  const ip = request.headers.get('x-forwarded-for') || 
+             request.headers.get('x-real-ip') || 
+             'unknown';
+  
+  // Block suspicious IPs
+  const blockedIPs = [
+    '127.0.0.1', // Localhost in production
+    '0.0.0.0',
+    '::1'
+  ];
+  
+  if (blockedIPs.includes(ip)) {
+    return { allowed: false, reason: 'Blocked IP address' };
   }
+  
+  // Allow all other IPs for now
+  // In production, implement proper IP filtering
+  return { allowed: true };
+}
 
-  if (Array.isArray(input)) {
-    return input.map(sanitizeInput);
+/**
+ * API endpoint protection middleware
+ */
+export function protectAPIEndpoint(
+  request: NextRequest,
+  endpoint: keyof typeof RATE_LIMITS
+): NextResponse | null {
+  // Check IP access
+  const ipCheck = checkIPAccess(request);
+  if (!ipCheck.allowed) {
+    logger.warn(`Blocked request from IP`, {
+      ip: request.headers.get('x-forwarded-for'),
+      reason: ipCheck.reason,
+      endpoint
+    });
+    
+    return NextResponse.json(
+      { error: 'Access denied', reason: ipCheck.reason },
+      { status: 403 }
+    );
   }
-
-  if (typeof input === 'object' && input !== null) {
-    const sanitized: any = {};
-    for (const [key, value] of Object.entries(input)) {
-      sanitized[key] = sanitizeInput(value);
-    }
-    return sanitized;
+  
+  // Check for bots
+  if (detectBot(request)) {
+    logger.warn(`Bot detected`, {
+      userAgent: request.headers.get('user-agent'),
+      endpoint
+    });
+    
+    return NextResponse.json(
+      { error: 'Bot access not allowed' },
+      { status: 403 }
+    );
   }
+  
+  // Rate limiting
+  const identifier = getClientIdentifier(request);
+  const config = RATE_LIMITS[endpoint];
+  const rateLimitResult = checkRateLimit(identifier, config);
+  
+  if (!rateLimitResult.allowed) {
+    logger.warn(`Rate limit exceeded`, {
+      identifier,
+      endpoint,
+      retryAfter: rateLimitResult.retryAfter
+    });
+    
+    return NextResponse.json(
+      {
+        error: 'Rate limit exceeded',
+        retryAfter: rateLimitResult.retryAfter
+      },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': rateLimitResult.retryAfter?.toString() || '60'
+        }
+      }
+    );
+  }
+  
+  return null; // Allow request to continue
+}
 
-  return input;
+/**
+ * Request logging middleware
+ */
+export function logRequest(request: NextRequest, response: NextResponse): void {
+  const method = request.method;
+  const url = request.url;
+  const status = response.status;
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  
+  logger.info(`Request processed`, {
+    method,
+    url,
+    status,
+    userAgent,
+    ip,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Log suspicious requests
+  if (status >= 400) {
+    logger.warn(`Suspicious request detected`, {
+      method,
+      url,
+      status,
+      userAgent,
+      ip
+    });
+  }
+}
+
+/**
+ * Main security middleware
+ */
+export function securityMiddleware(
+  request: NextRequest,
+  endpoint?: keyof typeof RATE_LIMITS
+): NextResponse | null {
+  // Add security headers to all responses
+  const response = new NextResponse();
+  addSecurityHeaders(response);
+  
+  // For API endpoints, apply additional protection
+  if (endpoint && request.nextUrl.pathname.startsWith('/api/')) {
+    return protectAPIEndpoint(request, endpoint);
+  }
+  
+  return null;
 }

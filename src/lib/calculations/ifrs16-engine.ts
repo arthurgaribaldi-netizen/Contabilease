@@ -1,3 +1,18 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary IFRS 16 calculation algorithms.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ * 
+ * PROPRIETARY ALGORITHMS:
+ * - IFRS 16 Lease Liability calculations
+ * - Right-of-use Asset computations
+ * - Amortization schedule generation
+ * - Financial validation algorithms
+ */
+
 import { IFRS16CalculationResult, IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
 
 /**

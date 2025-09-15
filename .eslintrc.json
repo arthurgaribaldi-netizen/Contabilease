@@ -4,7 +4,7 @@
   "parserOptions": {
     "project": ["./tsconfig.json", "./tsconfig.test.json"]
   },
-  "plugins": ["@typescript-eslint", "react", "react-hooks", "jsx-a11y"],
+  "plugins": ["@typescript-eslint", "react", "react-hooks", "jsx-a11y", "jest"],
   "rules": {
     // Regras críticas apenas
     "prefer-const": "warn",
@@ -115,7 +115,12 @@
         "@typescript-eslint/no-non-null-assertion": "off",
         "no-magic-numbers": "off",
         "max-lines-per-function": "off",
-        "@typescript-eslint/no-floating-promises": "off"
+        "@typescript-eslint/no-floating-promises": "off",
+        "jest/no-disabled-tests": "warn",
+        "jest/no-focused-tests": "error",
+        "jest/no-identical-title": "error",
+        "jest/prefer-to-have-length": "warn",
+        "jest/valid-expect": "error"
       }
     },
     {

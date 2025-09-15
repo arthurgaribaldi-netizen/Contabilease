@@ -1,3 +1,12 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary Contabilease software components.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 'use client';
 
 import { supabase } from '@/lib/supabase';
@@ -67,7 +76,7 @@ function useAuthForm(mode: 'login' | 'register') {
   return { state, updateState, handleSubmit, t, tCommon };
 }
 
-// Reusable input component
+// Reusable input component with specific classes
 function AuthInput({ 
   id, 
   type, 
@@ -84,8 +93,8 @@ function AuthInput({
   required?: boolean;
 }) {
   return (
-    <div>
-      <label htmlFor={id} className='block text-sm font-medium text-gray-700'>
+    <div className="contabilease-auth contabilease-form">
+      <label htmlFor={id} className='contabilease-auth contabilease-form contabilease-text-gray-700 block text-sm font-medium'>
         {label}
       </label>
       <input
@@ -94,20 +103,20 @@ function AuthInput({
         value={value}
         onChange={onChange}
         required={required}
-        className='mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
+        className='contabilease-auth contabilease-form contabilease-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
       />
     </div>
   );
 }
 
-// Message display component
+// Message display component with specific classes
 function MessageDisplay({ message }: { message: string }) {
   if (!message) return null;
   
   const isSuccess = message.includes('sucesso') || message.includes('success');
   return (
-    <div className={`mt-4 p-3 rounded-md ${
-      isSuccess ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+    <div className={`contabilease-auth contabilease-form mt-4 p-3 rounded-md ${
+      isSuccess ? 'contabilease-bg-green-100 contabilease-text-green-700 bg-green-100 text-green-700' : 'contabilease-bg-red-100 contabilease-text-red-700 bg-red-100 text-red-700'
     }`}>
       {message}
     </div>

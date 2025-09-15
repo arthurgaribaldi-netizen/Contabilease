@@ -32,6 +32,7 @@ const AmortizationChart = lazy(() => import('@/components/charts/AmortizationCha
 const ComplianceChart = lazy(() => import('@/components/charts/ComplianceChart'));
 const FinancialOverviewChart = lazy(() => import('@/components/charts/FinancialOverviewChart'));
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour'));
+const OptimizedOnboarding = lazy(() => import('@/components/onboarding/OptimizedOnboarding'));
 const WelcomeModal = lazy(() => import('@/components/onboarding/WelcomeModal'));
 const Chart3D = lazy(() => import('@/components/ui/3d-chart').then(module => ({ default: module.Chart3D })));
 const BentoCard = lazy(() => import('@/components/ui/bento-card').then(module => ({ default: module.BentoCard })));
@@ -111,8 +112,18 @@ export default function DashboardClient() {
   const [financialData, setFinancialData] = useState<FinancialData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { error: showError } = useToast();
-  const { isTourOpen, startTour, closeTour, completeTour, shouldShowWelcome, markWelcomeSeen } =
-    useOnboarding();
+  const { 
+    isTourOpen, 
+    startTour, 
+    closeTour, 
+    completeTour, 
+    shouldShowWelcome, 
+    markWelcomeSeen,
+    shouldShowOptimizedOnboarding,
+    completeOptimizedOnboarding,
+    achieveFirstVictory,
+    hasAchievedFirstVictory
+  } = useOnboarding();
 
   // AI Personalization
   const { updateBehavior, getPersonalizedLayout } = useAIPersonalization();
@@ -734,12 +745,24 @@ export default function DashboardClient() {
       {/* Onboarding Modals - Load after initial render */}
       {showAdvancedFeatures && (
         <Suspense fallback={null}>
-          <WelcomeModal
-            isOpen={shouldShowWelcome()}
-            onClose={markWelcomeSeen}
-            onStartTour={startTour}
-          />
-          <OnboardingTour isOpen={isTourOpen} onClose={closeTour} onComplete={completeTour} />
+          {/* Show optimized onboarding for new users */}
+          {shouldShowOptimizedOnboarding() ? (
+            <OptimizedOnboarding
+              isOpen={true}
+              onClose={() => completeOptimizedOnboarding()}
+              onComplete={() => completeOptimizedOnboarding()}
+              onFirstVictory={achieveFirstVictory}
+            />
+          ) : (
+            <>
+              <WelcomeModal
+                isOpen={shouldShowWelcome()}
+                onClose={markWelcomeSeen}
+                onStartTour={startTour}
+              />
+              <OnboardingTour isOpen={isTourOpen} onClose={closeTour} onComplete={completeTour} />
+            </>
+          )}
         </Suspense>
       )}
     </div>

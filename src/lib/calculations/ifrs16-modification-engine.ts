@@ -1,6 +1,15 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary IFRS 16 contract modification algorithms.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 import {
-  ContractModificationFormData,
-  ModificationCalculationResult,
+    ContractModificationFormData,
+    ModificationCalculationResult,
 } from '@/lib/schemas/contract-modification';
 import { IFRS16CalculationResult, IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
 import { IFRS16CalculationEngine } from './ifrs16-engine';

@@ -11,8 +11,8 @@ import { config } from 'dotenv';
 // Load environment variables
 config();
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+const supabaseServiceKey = process.env['SUPABASE_SERVICE_ROLE_KEY'];
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Missing Supabase environment variables');
@@ -31,7 +31,7 @@ async function testSubscriptionPlans() {
       .from('subscription_plans')
       .select('*')
       .eq('is_active', true)
-      .order('price_monthly', 'asc');
+      .order('price_monthly', { ascending: true });
 
     if (plansError) {
       console.error('❌ Erro ao buscar planos:', plansError);
@@ -114,7 +114,7 @@ async function testSubscriptionLimits() {
     
     const tables = ['subscription_plans', 'user_subscriptions', 'subscription_usage'];
     for (const table of tables) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from(table)
         .select('*')
         .limit(1);
@@ -128,7 +128,7 @@ async function testSubscriptionLimits() {
 
     // Test 2: Verificar políticas RLS
     console.log('\n2️⃣ Verificando políticas RLS...');
-    const { data: policies, error: policiesError } = await supabase
+    const { error: policiesError } = await supabase
       .rpc('get_rls_policies');
 
     if (policiesError) {

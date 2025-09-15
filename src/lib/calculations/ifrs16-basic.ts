@@ -1,4 +1,13 @@
 /**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary Contabilease software components.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
+/**
  * Basic IFRS 16 Calculation Engine
  *
  * This module provides core IFRS 16 lease accounting calculations including:

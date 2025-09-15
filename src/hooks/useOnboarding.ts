@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface OnboardingState {
   hasCompletedTour: boolean;
   hasSeenWelcome: boolean;
   lastTourDate: string | null;
+  hasCompletedOptimizedOnboarding: boolean;
+  firstVictoryAchieved: boolean;
+  companyData?: {
+    companyName: string;
+    industry: string;
+    monthlyContracts: string;
+  };
 }
 
 const ONBOARDING_KEY = 'contabilease-onboarding';
@@ -15,6 +22,8 @@ export function useOnboarding() {
     hasCompletedTour: false,
     hasSeenWelcome: false,
     lastTourDate: null,
+    hasCompletedOptimizedOnboarding: false,
+    firstVictoryAchieved: false,
   });
   const [isTourOpen, setIsTourOpen] = useState(false);
 
@@ -59,6 +68,8 @@ export function useOnboarding() {
       hasCompletedTour: false,
       hasSeenWelcome: false,
       lastTourDate: null,
+      hasCompletedOptimizedOnboarding: false,
+      firstVictoryAchieved: false,
     });
   };
 
@@ -84,6 +95,27 @@ export function useOnboarding() {
     saveOnboardingState({ hasSeenWelcome: true });
   };
 
+  // New optimized onboarding functions
+  const completeOptimizedOnboarding = (companyData?: any) => {
+    saveOnboardingState({
+      hasCompletedOptimizedOnboarding: true,
+      hasCompletedTour: true, // Mark old tour as completed too
+      companyData,
+    });
+  };
+
+  const achieveFirstVictory = () => {
+    saveOnboardingState({ firstVictoryAchieved: true });
+  };
+
+  const shouldShowOptimizedOnboarding = () => {
+    return !onboardingState.hasCompletedOptimizedOnboarding;
+  };
+
+  const hasAchievedFirstVictory = () => {
+    return onboardingState.firstVictoryAchieved;
+  };
+
   return {
     onboardingState,
     isTourOpen,
@@ -94,5 +126,10 @@ export function useOnboarding() {
     shouldShowWelcome,
     shouldShowTour,
     markWelcomeSeen,
+    // New optimized onboarding functions
+    completeOptimizedOnboarding,
+    achieveFirstVictory,
+    shouldShowOptimizedOnboarding,
+    hasAchievedFirstVictory,
   };
 }

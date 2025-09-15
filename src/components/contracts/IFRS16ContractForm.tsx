@@ -1,10 +1,18 @@
+/**
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * This file contains proprietary IFRS 16 contract form components.
+ * Unauthorized copying, distribution, or modification is prohibited.
+ */
+
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { z } from 'zod';
-import { IFRS16LeaseFormData, IFRS16CalculationResult } from '@/lib/schemas/ifrs16-lease';
 import { IFRS16CalculationEngine } from '@/lib/calculations/ifrs16-engine';
-import { ifrs16LeaseSchema } from '@/lib/schemas/ifrs16-lease';
+import { IFRS16CalculationResult, IFRS16LeaseFormData, ifrs16LeaseSchema } from '@/lib/schemas/ifrs16-lease';
+import { useCallback, useEffect, useState } from 'react';
+import { z } from 'zod';
 import AmortizationScheduleTable from './AmortizationScheduleTable';
 import FinancialValidationPanel from './FinancialValidationPanel';
 

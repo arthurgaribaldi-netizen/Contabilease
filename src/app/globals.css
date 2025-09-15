@@ -30,37 +30,50 @@
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 
-  /* Optimize critical elements */
-  .min-h-screen {
+  /* Contabilease App Namespace - Base styles */
+  .contabilease-app {
+    /* App-level styles */
+  }
+
+  /* Optimize critical elements with specific selectors */
+  .contabilease-app .contabilease-min-h-screen {
     min-height: 100vh;
   }
 
-  .container {
+  .contabilease-app .contabilease-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1rem;
   }
 
-  /* Optimize text rendering */
-  h1, h2, h3, h4, h5, h6 {
+  /* Optimize text rendering with specific selectors */
+  .contabilease-app .contabilease-heading,
+  .contabilease-app h1, 
+  .contabilease-app h2, 
+  .contabilease-app h3, 
+  .contabilease-app h4, 
+  .contabilease-app h5, 
+  .contabilease-app h6 {
     font-weight: 600;
     line-height: 1.25;
   }
 
-  p {
+  .contabilease-app .contabilease-paragraph,
+  .contabilease-app p {
     line-height: 1.6;
   }
 
-  /* Optimize button rendering */
-  button {
+  /* Optimize button rendering with specific selectors */
+  .contabilease-app .contabilease-button,
+  .contabilease-app button {
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
   }
 }
 
-/* Tour highlight styles */
-.tour-highlight {
+/* Tour highlight styles with specific selectors */
+.contabilease-app .contabilease-tour-highlight {
   position: relative;
   z-index: 10;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
@@ -68,7 +81,7 @@
   transition: all 0.3s ease;
 }
 
-.tour-highlight::before {
+.contabilease-app .contabilease-tour-highlight::before {
   content: '';
   position: absolute;
   top: -4px;
@@ -78,10 +91,10 @@
   background: linear-gradient(45deg, #3b82f6, #1d4ed8, #3b82f6);
   border-radius: 12px;
   z-index: -1;
-  animation: tour-glow 2s ease-in-out infinite alternate;
+  animation: contabilease-tour-glow 2s ease-in-out infinite alternate;
 }
 
-@keyframes tour-glow {
+@keyframes contabilease-tour-glow {
   0% {
     opacity: 0.5;
     transform: scale(1);
@@ -92,8 +105,8 @@
   }
 }
 
-/* Custom animations */
-@keyframes shake {
+/* Custom animations with specific selectors */
+@keyframes contabilease-shake {
   0%,
   100% {
     transform: translateX(0);
@@ -113,16 +126,16 @@
   }
 }
 
-.animate-shake {
-  animation: shake 0.5s ease-in-out;
+.contabilease-app .contabilease-animate-shake {
+  animation: contabilease-shake 0.5s ease-in-out;
 }
 
-/* Fade in animation */
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
+/* Fade in animation with specific selectors */
+.contabilease-app .contabilease-animate-fade-in {
+  animation: contabilease-fade-in 0.5s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes contabilease-fade-in {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -133,53 +146,53 @@
   }
 }
 
-/* High contrast mode */
-.high-contrast {
+/* High contrast mode with specific selectors */
+.contabilease-app.contabilease-high-contrast {
   --tw-bg-opacity: 1;
   --tw-text-opacity: 1;
 }
 
-.high-contrast .bg-white {
+.contabilease-app.contabilease-high-contrast .contabilease-bg-white {
   background-color: #ffffff !important;
 }
 
-.high-contrast .bg-gray-50 {
+.contabilease-app.contabilease-high-contrast .contabilease-bg-gray-50 {
   background-color: #f9fafb !important;
 }
 
-.high-contrast .bg-gray-100 {
+.contabilease-app.contabilease-high-contrast .contabilease-bg-gray-100 {
   background-color: #f3f4f6 !important;
 }
 
-.high-contrast .bg-gray-200 {
+.contabilease-app.contabilease-high-contrast .contabilease-bg-gray-200 {
   background-color: #e5e7eb !important;
 }
 
-.high-contrast .text-gray-900 {
+.contabilease-app.contabilease-high-contrast .contabilease-text-gray-900 {
   color: #000000 !important;
 }
 
-.high-contrast .text-gray-700 {
+.contabilease-app.contabilease-high-contrast .contabilease-text-gray-700 {
   color: #000000 !important;
 }
 
-.high-contrast .text-gray-600 {
+.contabilease-app.contabilease-high-contrast .contabilease-text-gray-600 {
   color: #000000 !important;
 }
 
-.high-contrast .text-gray-500 {
+.contabilease-app.contabilease-high-contrast .contabilease-text-gray-500 {
   color: #000000 !important;
 }
 
-.high-contrast .border-gray-200 {
+.contabilease-app.contabilease-high-contrast .contabilease-border-gray-200 {
   border-color: #000000 !important;
 }
 
-.high-contrast .border-gray-300 {
+.contabilease-app.contabilease-high-contrast .contabilease-border-gray-300 {
   border-color: #000000 !important;
 }
 
-.high-contrast .bg-blue-600 {
+.contabilease-app.contabilease-high-contrast .contabilease-bg-blue-600 {
   background-color: #0000ff !important;
 }
 
