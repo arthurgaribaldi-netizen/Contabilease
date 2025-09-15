@@ -1,6 +1,10 @@
 /**
- * Sistema de logging para substituir console statements
- * Permite diferentes níveis de log e pode ser configurado para diferentes ambientes
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * Sistema de Logging Estruturado e Robusto
+ * Suporte a múltiplos destinos, níveis e formatação estruturada
  */
 
 export enum LogLevel {
@@ -8,54 +12,404 @@ export enum LogLevel {
   WARN = 'warn',
   INFO = 'info',
   DEBUG = 'debug',
+  TRACE = 'trace',
 }
 
-class Logger {
-  private isDevelopment = process.env.NODE_ENV === 'development';
+export interface LogContext {
+  userId?: string;
+  sessionId?: string;
+  requestId?: string;
+  correlationId?: string;
+  component?: string;
+  operation?: string;
+  duration?: number;
+  [key: string]: unknown;
+}
 
-  private log(level: LogLevel, message: string, ...args: unknown[]): void {
-    if (!this.isDevelopment && level === LogLevel.DEBUG) {
-      return; // Não logar debug em produção
+export interface LogEntry {
+  timestamp: string;
+  level: LogLevel;
+  message: string;
+  context?: LogContext;
+  error?: {
+    name: string;
+    message: string;
+    stack?: string;
+    code?: string;
+  };
+  metadata?: Record<string, unknown>;
+}
+
+export interface LoggerConfig {
+  level: LogLevel;
+  enableConsole: boolean;
+  enableFile: boolean;
+  enableRemote: boolean;
+  enableStructured: boolean;
+  maxFileSize: number;
+  maxFiles: number;
+  remoteEndpoint?: string;
+  remoteApiKey?: string;
+  component: string;
+}
+
+class StructuredLogger {
+  private config: LoggerConfig;
+  private logBuffer: LogEntry[] = [];
+  private bufferSize = 100;
+  private flushInterval: NodeJS.Timeout | null = null;
+
+  constructor(config?: Partial<LoggerConfig>) {
+    this.config = {
+      level: this.getLogLevelFromEnv(),
+      enableConsole: process.env.NODE_ENV !== 'production',
+      enableFile: process.env.NODE_ENV === 'production',
+      enableRemote: process.env.NODE_ENV === 'production',
+      enableStructured: true,
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      maxFiles: 5,
+      remoteEndpoint: process.env.LOG_ENDPOINT,
+      remoteApiKey: process.env.LOG_API_KEY,
+      component: 'contabilease',
+      ...config,
+    };
+
+    // Iniciar flush periódico se habilitado
+    if (this.config.enableRemote && typeof window === 'undefined') {
+      this.startPeriodicFlush();
+    }
+  }
+
+  private getLogLevelFromEnv(): LogLevel {
+    const level = process.env.LOG_LEVEL?.toLowerCase();
+    switch (level) {
+      case 'error': return LogLevel.ERROR;
+      case 'warn': return LogLevel.WARN;
+      case 'info': return LogLevel.INFO;
+      case 'debug': return LogLevel.DEBUG;
+      case 'trace': return LogLevel.TRACE;
+      default: return process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG;
+    }
+  }
+
+  private shouldLog(level: LogLevel): boolean {
+    const levels = [LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO, LogLevel.DEBUG, LogLevel.TRACE];
+    const currentLevelIndex = levels.indexOf(this.config.level);
+    const messageLevelIndex = levels.indexOf(level);
+    return messageLevelIndex <= currentLevelIndex;
+  }
+
+  private formatLogEntry(entry: LogEntry): string {
+    if (!this.config.enableStructured) {
+      return `[${entry.timestamp}] [${entry.level.toUpperCase()}] ${entry.message}`;
     }
 
-    const timestamp = new Date().toISOString();
-    const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
+    const logData = {
+      timestamp: entry.timestamp,
+      level: entry.level,
+      message: entry.message,
+      component: this.config.component,
+      ...entry.context,
+      ...(entry.error && { error: entry.error }),
+      ...(entry.metadata && { metadata: entry.metadata }),
+    };
 
-    switch (level) {
+    return JSON.stringify(logData);
+  }
+
+  private createLogEntry(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+    error?: Error,
+    metadata?: Record<string, unknown>
+  ): LogEntry {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+    };
+
+    if (context) {
+      entry.context = context;
+    }
+
+    if (error) {
+      entry.error = {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        code: (error as any).code,
+      };
+    }
+
+    if (metadata) {
+      entry.metadata = metadata;
+    }
+
+    return entry;
+  }
+
+  private async logToConsole(entry: LogEntry): Promise<void> {
+    if (!this.config.enableConsole) return;
+
+    const formatted = this.formatLogEntry(entry);
+    
+    switch (entry.level) {
       case LogLevel.ERROR:
         // eslint-disable-next-line no-console
-        console.error(prefix, message, ...args);
+        console.error(formatted);
         break;
       case LogLevel.WARN:
         // eslint-disable-next-line no-console
-        console.warn(prefix, message, ...args);
+        console.warn(formatted);
         break;
       case LogLevel.INFO:
         // eslint-disable-next-line no-console
-        console.info(prefix, message, ...args);
+        console.info(formatted);
         break;
       case LogLevel.DEBUG:
         // eslint-disable-next-line no-console
-        console.debug(prefix, message, ...args);
+        console.debug(formatted);
+        break;
+      case LogLevel.TRACE:
+        // eslint-disable-next-line no-console
+        console.trace(formatted);
         break;
     }
   }
 
-  error(message: string, ...args: unknown[]): void {
-    this.log(LogLevel.ERROR, message, ...args);
+  private async logToFile(entry: LogEntry): Promise<void> {
+    if (!this.config.enableFile || typeof window !== 'undefined') return;
+
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      const logDir = path.join(process.cwd(), 'logs');
+      const logFile = path.join(logDir, `${entry.level}.log`);
+      
+      // Criar diretório se não existir
+      await fs.mkdir(logDir, { recursive: true });
+      
+      // Verificar tamanho do arquivo e rotacionar se necessário
+      await this.rotateLogFile(logFile);
+      
+      const logLine = this.formatLogEntry(entry) + '\n';
+      await fs.appendFile(logFile, logLine);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to write to log file:', error);
+    }
   }
 
-  warn(message: string, ...args: unknown[]): void {
-    this.log(LogLevel.WARN, message, ...args);
+  private async rotateLogFile(logFile: string): Promise<void> {
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      const stats = await fs.stat(logFile).catch(() => null);
+      if (!stats || stats.size < this.config.maxFileSize) return;
+      
+      // Rotacionar arquivos
+      for (let i = this.config.maxFiles - 1; i > 0; i--) {
+        const oldFile = `${logFile}.${i}`;
+        const newFile = `${logFile}.${i + 1}`;
+        
+        try {
+          await fs.rename(oldFile, newFile);
+        } catch {
+          // Arquivo não existe, continuar
+        }
+      }
+      
+      // Mover arquivo atual
+      await fs.rename(logFile, `${logFile}.1`);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to rotate log file:', error);
+    }
   }
 
-  info(message: string, ...args: unknown[]): void {
-    this.log(LogLevel.INFO, message, ...args);
+  private async logToRemote(entry: LogEntry): Promise<void> {
+    if (!this.config.enableRemote || !this.config.remoteEndpoint) return;
+
+    try {
+      const response = await fetch(this.config.remoteEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.remoteApiKey}`,
+          'X-Component': this.config.component,
+        },
+        body: JSON.stringify(entry),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Remote logging failed: ${response.status}`);
+      }
+    } catch (error) {
+      // Falha silenciosa para não quebrar a aplicação
+      // eslint-disable-next-line no-console
+      console.error('Remote logging failed:', error);
+    }
   }
 
-  debug(message: string, ...args: unknown[]): void {
-    this.log(LogLevel.DEBUG, message, ...args);
+  private async flushLogs(): Promise<void> {
+    if (this.logBuffer.length === 0) return;
+
+    const logsToFlush = [...this.logBuffer];
+    this.logBuffer = [];
+
+    try {
+      await Promise.all([
+        ...logsToFlush.map(log => this.logToConsole(log)),
+        ...logsToFlush.map(log => this.logToFile(log)),
+        ...logsToFlush.map(log => this.logToRemote(log)),
+      ]);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to flush logs:', error);
+    }
+  }
+
+  private startPeriodicFlush(): void {
+    this.flushInterval = setInterval(() => {
+      this.flushLogs();
+    }, 5000); // Flush a cada 5 segundos
+  }
+
+  private async log(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+    error?: Error,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
+    if (!this.shouldLog(level)) return;
+
+    const entry = this.createLogEntry(level, message, context, error, metadata);
+
+    // Log imediato para console
+    await this.logToConsole(entry);
+
+    // Buffer para outros destinos
+    this.logBuffer.push(entry);
+
+    // Flush se buffer estiver cheio
+    if (this.logBuffer.length >= this.bufferSize) {
+      await this.flushLogs();
+    }
+  }
+
+  // Métodos públicos
+  async error(message: string, context?: LogContext, error?: Error, metadata?: Record<string, unknown>): Promise<void> {
+    await this.log(LogLevel.ERROR, message, context, error, metadata);
+  }
+
+  async warn(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+    await this.log(LogLevel.WARN, message, context, undefined, metadata);
+  }
+
+  async info(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+    await this.log(LogLevel.INFO, message, context, undefined, metadata);
+  }
+
+  async debug(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+    await this.log(LogLevel.DEBUG, message, context, undefined, metadata);
+  }
+
+  async trace(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+    await this.log(LogLevel.TRACE, message, context, undefined, metadata);
+  }
+
+  // Métodos de conveniência
+  async logRequest(
+    method: string,
+    url: string,
+    statusCode: number,
+    duration: number,
+    context?: LogContext
+  ): Promise<void> {
+    const level = statusCode >= 400 ? LogLevel.ERROR : LogLevel.INFO;
+    const message = `${method} ${url} - ${statusCode} (${duration}ms)`;
+    
+    await this.log(level, message, {
+      ...context,
+      method,
+      url,
+      statusCode,
+      duration,
+      operation: 'http_request',
+    });
+  }
+
+  async logAuth(
+    action: string,
+    userId?: string,
+    success: boolean = true,
+    context?: LogContext
+  ): Promise<void> {
+    const level = success ? LogLevel.INFO : LogLevel.WARN;
+    const message = `Auth ${action} ${success ? 'successful' : 'failed'}`;
+    
+    await this.log(level, message, {
+      ...context,
+      userId,
+      success,
+      operation: 'auth',
+      action,
+    });
+  }
+
+  async logBusiness(
+    operation: string,
+    entityType: string,
+    entityId: string,
+    context?: LogContext
+  ): Promise<void> {
+    const message = `Business operation: ${operation} on ${entityType}:${entityId}`;
+    
+    await this.log(LogLevel.INFO, message, {
+      ...context,
+      operation,
+      entityType,
+      entityId,
+    });
+  }
+
+  async logPerformance(
+    operation: string,
+    duration: number,
+    context?: LogContext
+  ): Promise<void> {
+    const level = duration > 1000 ? LogLevel.WARN : LogLevel.INFO;
+    const message = `Performance: ${operation} took ${duration}ms`;
+    
+    await this.log(level, message, {
+      ...context,
+      operation,
+      duration,
+    });
+  }
+
+  // Configuração dinâmica
+  updateConfig(updates: Partial<LoggerConfig>): void {
+    this.config = { ...this.config, ...updates };
+  }
+
+  // Limpeza
+  async destroy(): Promise<void> {
+    if (this.flushInterval) {
+      clearInterval(this.flushInterval);
+    }
+    await this.flushLogs();
   }
 }
 
-export const logger = new Logger();
+// Instância global
+export const logger = new StructuredLogger();
+
+// Exportar tipos e classe para uso avançado
+export { StructuredLogger };
+

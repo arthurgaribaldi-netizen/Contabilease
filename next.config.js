@@ -67,30 +67,77 @@ const nextConfig = {
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
+        minSize: 20000,
+        maxSize: 244000,
         cacheGroups: {
+          // Vendor libraries
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             chunks: 'all',
+            priority: 10,
           },
+          // Heavy UI libraries
           framerMotion: {
             test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
             name: 'framer-motion',
             chunks: 'all',
+            priority: 20,
           },
           three: {
             test: /[\\/]node_modules[\\/]three[\\/]/,
             name: 'three',
             chunks: 'all',
+            priority: 20,
           },
+          // Chart libraries
           charts: {
             test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2)[\\/]/,
             name: 'charts',
             chunks: 'all',
+            priority: 20,
+          },
+          // Supabase
+          supabase: {
+            test: /[\\/]node_modules[\\/]@supabase[\\/]/,
+            name: 'supabase',
+            chunks: 'all',
+            priority: 15,
+          },
+          // Stripe
+          stripe: {
+            test: /[\\/]node_modules[\\/]@stripe[\\/]/,
+            name: 'stripe',
+            chunks: 'all',
+            priority: 15,
+          },
+          // React libraries
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'react',
+            chunks: 'all',
+            priority: 25,
+          },
+          // Common utilities
+          utils: {
+            test: /[\\/]node_modules[\\/](clsx|tailwind-merge|lucide-react)[\\/]/,
+            name: 'utils',
+            chunks: 'all',
+            priority: 15,
           },
         },
       };
     }
+
+    // Tree shaking optimization
+    config.optimization.usedExports = true;
+    config.optimization.sideEffects = false;
+
+    // Module resolution optimization
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+    };
 
     return config;
   },

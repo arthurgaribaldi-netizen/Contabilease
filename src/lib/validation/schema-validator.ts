@@ -269,19 +269,19 @@ function validateCPF(cpf: string): boolean {
   
   let sum = 0;
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(numbers[i]) * (10 - i);
+    sum += parseInt(numbers[i]!) * (10 - i);
   }
   let digit1 = 11 - (sum % 11);
   if (digit1 >= 10) digit1 = 0;
   
   sum = 0;
   for (let i = 0; i < 10; i++) {
-    sum += parseInt(numbers[i]) * (11 - i);
+    sum += parseInt(numbers[i]!) * (11 - i);
   }
   let digit2 = 11 - (sum % 11);
   if (digit2 >= 10) digit2 = 0;
   
-  return digit1 === parseInt(numbers[9]) && digit2 === parseInt(numbers[10]);
+  return digit1 === parseInt(numbers[9]!) && digit2 === parseInt(numbers[10]!);
 }
 
 /**
@@ -299,17 +299,17 @@ function validateCNPJ(cnpj: string): boolean {
   
   let sum = 0;
   for (let i = 0; i < 12; i++) {
-    sum += parseInt(numbers[i]) * weights1[i];
+    sum += parseInt(numbers[i]!) * weights1[i]!;
   }
   let digit1 = sum % 11 < 2 ? 0 : 11 - (sum % 11);
   
   sum = 0;
   for (let i = 0; i < 13; i++) {
-    sum += parseInt(numbers[i]) * weights2[i];
+    sum += parseInt(numbers[i]!) * weights2[i]!;
   }
   let digit2 = sum % 11 < 2 ? 0 : 11 - (sum % 11);
   
-  return digit1 === parseInt(numbers[12]) && digit2 === parseInt(numbers[13]);
+  return digit1 === parseInt(numbers[12]!) && digit2 === parseInt(numbers[13]!);
 }
 
 /**
@@ -338,7 +338,7 @@ export function withValidation<T>(
   schema: z.ZodSchema<T>,
   context?: string
 ) {
-  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (request: Request) {

@@ -1,577 +1,480 @@
 /**
- * Sistema de Telemetria e Observabilidade para Contabilease
- * Implementa coleta de métricas, logs estruturados e rastreamento distribuído
+ * @copyright 2025 Contabilease. All rights reserved.
+ * @license Proprietary - See LICENSE.txt
+ * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
+ * 
+ * Sistema de Monitoramento e Telemetria
+ * Coleta métricas de performance, erros e uso da aplicação
  */
 
-import { logger } from '@/lib/logger';
-import React from 'react';
+import { logger } from '../logger';
 
 export interface TelemetryEvent {
-  id: string;
-  type: 'metric' | 'log' | 'trace' | 'span';
-  name: string;
-  timestamp: number;
-  data: Record<string, unknown>;
-  tags: Record<string, string>;
+  event: string;
+  timestamp: string;
   userId?: string;
   sessionId?: string;
-  traceId?: string;
-  spanId?: string;
-  parentSpanId?: string;
+  properties?: Record<string, unknown>;
+  metrics?: Record<string, number>;
 }
 
-export interface TelemetryConfig {
-  enabled: boolean;
-  sampleRate: number; // 0-1
-  batchSize: number;
-  flushInterval: number; // ms
-  maxRetries: number;
-  endpoints: {
-    metrics: string;
-    logs: string;
-    traces: string;
-  };
-  tags: Record<string, string>;
-}
-
-export interface MetricData {
+export interface PerformanceMetric {
   name: string;
   value: number;
-  unit?: string;
-  tags?: Record<string, string>;
-  timestamp?: number;
-}
-
-export interface LogData {
-  level: 'debug' | 'info' | 'warn' | 'error';
-  message: string;
+  unit: 'ms' | 'bytes' | 'count';
+  timestamp: string;
   context?: Record<string, unknown>;
-  tags?: Record<string, string>;
 }
 
-export interface TraceData {
-  operationName: string;
-  startTime: number;
-  endTime?: number;
-  duration?: number;
-  tags?: Record<string, string>;
-  logs?: Array<{ timestamp: number; message: string; level: string }>;
+export interface ErrorMetric {
+  error: string;
+  stack?: string;
+  component?: string;
+  userId?: string;
+  sessionId?: string;
+  timestamp: string;
+  context?: Record<string, unknown>;
+}
+
+export interface AlertRule {
+  id: string;
+  name: string;
+  metric: string;
+  threshold: number;
+  operator: 'gt' | 'lt' | 'eq' | 'gte' | 'lte';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  enabled: boolean;
+  cooldown: number; // em segundos
+  lastTriggered?: string;
 }
 
 class TelemetryManager {
-  private config: TelemetryConfig;
   private events: TelemetryEvent[] = [];
-  private flushTimer: NodeJS.Timeout | null = null;
-  private isFlushing = false;
-  private traceContext: { traceId: string; spanId: string } | null = null;
+  private metrics: PerformanceMetric[] = [];
+  private errors: ErrorMetric[] = [];
+  private alertRules: AlertRule[] = [];
+  private batchSize = 100;
+  private flushInterval: NodeJS.Timeout | null = null;
+  private endpoint: string;
+  private apiKey: string;
 
-  constructor(config?: Partial<TelemetryConfig>) {
-    this.config = {
-      enabled: true,
-      sampleRate: 1.0,
-      batchSize: 100,
-      flushInterval: 30000, // 30 segundos
-      maxRetries: 3,
-      endpoints: {
-        metrics: '/api/telemetry/metrics',
-        logs: '/api/telemetry/logs',
-        traces: '/api/telemetry/traces',
-      },
-      tags: {
-        service: 'contabilease',
-        version: process.env.npm_package_version || '1.0.0',
-        environment: process.env.NODE_ENV || 'development',
-      },
-      ...config,
-    };
-
-    this.startFlushTimer();
-  }
-
-  /**
-   * Registra métrica
-   */
-  recordMetric(data: MetricData): void {
-    if (!this.shouldSample()) return;
-
-    const event: TelemetryEvent = {
-      id: this.generateId(),
-      type: 'metric',
-      name: data.name,
-      timestamp: data.timestamp || Date.now(),
-      data: {
-        value: data.value,
-        unit: data.unit,
-      },
-      tags: { ...this.config.tags, ...data.tags },
-      traceId: this.traceContext?.traceId,
-      spanId: this.traceContext?.spanId,
-    };
-
-    this.addEvent(event);
-    logger.debug(`Metric recorded: ${data.name}`, { value: data.value, tags: data.tags });
-  }
-
-  /**
-   * Registra log estruturado
-   */
-  recordLog(data: LogData): void {
-    if (!this.shouldSample()) return;
-
-    const event: TelemetryEvent = {
-      id: this.generateId(),
-      type: 'log',
-      name: data.level,
-      timestamp: Date.now(),
-      data: {
-        message: data.message,
-        context: data.context,
-      },
-      tags: { ...this.config.tags, ...data.tags },
-      traceId: this.traceContext?.traceId,
-      spanId: this.traceContext?.spanId,
-    };
-
-    this.addEvent(event);
-    logger.debug(`Log recorded: ${data.level}`, { message: data.message });
-  }
-
-  /**
-   * Inicia trace distribuído
-   */
-  startTrace(operationName: string, tags?: Record<string, string>): string {
-    const traceId = this.generateTraceId();
-    const spanId = this.generateSpanId();
+  constructor() {
+    this.endpoint = process.env.TELEMETRY_ENDPOINT || '';
+    this.apiKey = process.env.TELEMETRY_API_KEY || '';
     
-    this.traceContext = { traceId, spanId };
-
-    const event: TelemetryEvent = {
-      id: this.generateId(),
-      type: 'trace',
-      name: operationName,
-      timestamp: Date.now(),
-      data: {
-        startTime: Date.now(),
-      },
-      tags: { ...this.config.tags, ...tags },
-      traceId,
-      spanId,
-    };
-
-    this.addEvent(event);
-    logger.debug(`Trace started: ${operationName}`, { traceId, spanId });
-    
-    return spanId;
-  }
-
-  /**
-   * Finaliza trace
-   */
-  finishTrace(spanId: string, tags?: Record<string, string>): void {
-    const endTime = Date.now();
-    
-    const event: TelemetryEvent = {
-      id: this.generateId(),
-      type: 'trace',
-      name: 'trace_finish',
-      timestamp: endTime,
-      data: {
-        endTime,
-        duration: endTime - (this.traceContext?.traceId ? Date.now() : endTime),
-      },
-      tags: { ...this.config.tags, ...tags },
-      traceId: this.traceContext?.traceId,
-      spanId,
-    };
-
-    this.addEvent(event);
-    logger.debug(`Trace finished: ${spanId}`, { duration: event.data.duration });
-  }
-
-  /**
-   * Cria span dentro de trace
-   */
-  createSpan(operationName: string, parentSpanId?: string, tags?: Record<string, string>): string {
-    const spanId = this.generateSpanId();
-    
-    const event: TelemetryEvent = {
-      id: this.generateId(),
-      type: 'span',
-      name: operationName,
-      timestamp: Date.now(),
-      data: {
-        startTime: Date.now(),
-      },
-      tags: { ...this.config.tags, ...tags },
-      traceId: this.traceContext?.traceId,
-      spanId,
-      parentSpanId: parentSpanId || this.traceContext?.spanId,
-    };
-
-    this.addEvent(event);
-    logger.debug(`Span created: ${operationName}`, { spanId, parentSpanId });
-    
-    return spanId;
-  }
-
-  /**
-   * Finaliza span
-   */
-  finishSpan(spanId: string, tags?: Record<string, string>): void {
-    const endTime = Date.now();
-    
-    const event: TelemetryEvent = {
-      id: this.generateId(),
-      type: 'span',
-      name: 'span_finish',
-      timestamp: endTime,
-      data: {
-        endTime,
-        duration: endTime - Date.now(), // Será calculado corretamente na implementação real
-      },
-      tags: { ...this.config.tags, ...tags },
-      traceId: this.traceContext?.traceId,
-      spanId,
-    };
-
-    this.addEvent(event);
-    logger.debug(`Span finished: ${spanId}`, { duration: event.data.duration });
-  }
-
-  /**
-   * Adiciona evento à fila
-   */
-  private addEvent(event: TelemetryEvent): void {
-    if (!this.config.enabled) return;
-
-    this.events.push(event);
-
-    // Flush automático se atingir batch size
-    if (this.events.length >= this.config.batchSize) {
-      this.flush();
+    if (typeof window === 'undefined') {
+      this.startPeriodicFlush();
     }
   }
 
-  /**
-   * Verifica se deve fazer sample
-   */
-  private shouldSample(): boolean {
-    return Math.random() < this.config.sampleRate;
-  }
+  // Eventos de telemetria
+  trackEvent(event: string, properties?: Record<string, unknown>, userId?: string): void {
+    const telemetryEvent: TelemetryEvent = {
+      event,
+      timestamp: new Date().toISOString(),
+      userId,
+      sessionId: this.getSessionId(),
+      properties,
+    };
 
-  /**
-   * Gera ID único
-   */
-  private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Gera Trace ID
-   */
-  private generateTraceId(): string {
-    return Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-  }
-
-  /**
-   * Gera Span ID
-   */
-  private generateSpanId(): string {
-    return Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-  }
-
-  /**
-   * Inicia timer de flush
-   */
-  private startFlushTimer(): void {
-    if (this.flushTimer) {
-      clearInterval(this.flushTimer);
+    this.events.push(telemetryEvent);
+    
+    if (this.events.length >= this.batchSize) {
+      this.flushEvents();
     }
-
-    this.flushTimer = setInterval(() => {
-      this.flush();
-    }, this.config.flushInterval);
   }
 
-  /**
-   * Flush eventos para endpoints
-   */
-  async flush(): Promise<void> {
-    if (this.isFlushing || this.events.length === 0) return;
+  // Métricas de performance
+  trackPerformance(metric: PerformanceMetric): void {
+    this.metrics.push(metric);
+    
+    // Verificar alertas
+    this.checkAlertRules(metric);
+    
+    if (this.metrics.length >= this.batchSize) {
+      this.flushMetrics();
+    }
+  }
 
-    this.isFlushing = true;
+  // Métricas de erro
+  trackError(error: ErrorMetric): void {
+    this.errors.push(error);
+    
+    // Verificar alertas de erro
+    this.checkErrorAlertRules(error);
+    
+    if (this.errors.length >= this.batchSize) {
+      this.flushErrors();
+    }
+  }
+
+  // Métricas de negócio
+  trackBusinessMetric(name: string, value: number, context?: Record<string, unknown>): void {
+    this.trackPerformance({
+      name: `business.${name}`,
+      value,
+      unit: 'count',
+      timestamp: new Date().toISOString(),
+      context,
+    });
+  }
+
+  // Métricas de API
+  trackAPICall(endpoint: string, method: string, statusCode: number, duration: number): void {
+    this.trackPerformance({
+      name: 'api.call',
+      value: duration,
+      unit: 'ms',
+      timestamp: new Date().toISOString(),
+      context: {
+        endpoint,
+        method,
+        statusCode,
+      },
+    });
+  }
+
+  // Métricas de página
+  trackPageView(path: string, duration?: number): void {
+    this.trackEvent('page_view', { path, duration });
+    
+    if (duration) {
+      this.trackPerformance({
+        name: 'page.load_time',
+        value: duration,
+        unit: 'ms',
+        timestamp: new Date().toISOString(),
+        context: { path },
+      });
+    }
+  }
+
+  // Métricas de usuário
+  trackUserAction(action: string, context?: Record<string, unknown>): void {
+    this.trackEvent('user_action', { action, ...context });
+  }
+
+  // Métricas de performance web vitals
+  trackWebVitals(metric: { name: string; value: number; delta: number; id: string }): void {
+    this.trackPerformance({
+      name: `web_vitals.${metric.name}`,
+      value: metric.value,
+      unit: 'ms',
+      timestamp: new Date().toISOString(),
+      context: {
+        delta: metric.delta,
+        id: metric.id,
+      },
+    });
+  }
+
+  // Verificação de regras de alerta
+  private checkAlertRules(metric: PerformanceMetric): void {
+    for (const rule of this.alertRules) {
+      if (!rule.enabled || rule.metric !== metric.name) continue;
+      
+      // Verificar cooldown
+      if (rule.lastTriggered) {
+        const lastTriggered = new Date(rule.lastTriggered);
+        const cooldownMs = rule.cooldown * 1000;
+        if (Date.now() - lastTriggered.getTime() < cooldownMs) continue;
+      }
+      
+      // Verificar threshold
+      let shouldAlert = false;
+      switch (rule.operator) {
+        case 'gt': shouldAlert = metric.value > rule.threshold; break;
+        case 'lt': shouldAlert = metric.value < rule.threshold; break;
+        case 'eq': shouldAlert = metric.value === rule.threshold; break;
+        case 'gte': shouldAlert = metric.value >= rule.threshold; break;
+        case 'lte': shouldAlert = metric.value <= rule.threshold; break;
+      }
+      
+      if (shouldAlert) {
+        this.triggerAlert(rule, metric);
+      }
+    }
+  }
+
+  // Verificação de alertas de erro
+  private checkErrorAlertRules(error: ErrorMetric): void {
+    // Alertar sobre erros críticos
+    if (error.error.includes('CRITICAL') || error.error.includes('FATAL')) {
+      this.triggerErrorAlert(error);
+    }
+  }
+
+  // Disparar alerta
+  private triggerAlert(rule: AlertRule, metric: PerformanceMetric): void {
+    rule.lastTriggered = new Date().toISOString();
+    
+    const alert = {
+      ruleId: rule.id,
+      ruleName: rule.name,
+      severity: rule.severity,
+      metric: metric.name,
+      value: metric.value,
+      threshold: rule.threshold,
+      timestamp: new Date().toISOString(),
+      context: metric.context,
+    };
+
+    logger.warn(`Alert triggered: ${rule.name}`, alert);
+    
+    // Enviar alerta para sistema externo
+    this.sendAlert(alert);
+  }
+
+  // Disparar alerta de erro
+  private triggerErrorAlert(error: ErrorMetric): void {
+    const alert = {
+      type: 'error_alert',
+      severity: 'high',
+      error: error.error,
+      component: error.component || 'unknown',
+      timestamp: error.timestamp,
+      context: error.context,
+    };
+
+    logger.error(`Error alert triggered`, alert);
+    
+    // Enviar alerta para sistema externo
+    this.sendAlert(alert);
+  }
+
+  // Enviar alerta
+  private async sendAlert(alert: any): Promise<void> {
+    if (!this.endpoint || !this.apiKey) return;
+
+    try {
+      await fetch(`${this.endpoint}/alerts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify(alert),
+      });
+    } catch (error) {
+      logger.error('Failed to send alert', { error, alert });
+    }
+  }
+
+  // Flush de eventos
+  private async flushEvents(): Promise<void> {
+    if (this.events.length === 0) return;
+
     const eventsToFlush = [...this.events];
     this.events = [];
 
+    await this.sendTelemetry('events', eventsToFlush);
+  }
+
+  // Flush de métricas
+  private async flushMetrics(): Promise<void> {
+    if (this.metrics.length === 0) return;
+
+    const metricsToFlush = [...this.metrics];
+    this.metrics = [];
+
+    await this.sendTelemetry('metrics', metricsToFlush);
+  }
+
+  // Flush de erros
+  private async flushErrors(): Promise<void> {
+    if (this.errors.length === 0) return;
+
+    const errorsToFlush = [...this.errors];
+    this.errors = [];
+
+    await this.sendTelemetry('errors', errorsToFlush);
+  }
+
+  // Envio de telemetria
+  private async sendTelemetry(type: string, data: any[]): Promise<void> {
+    if (!this.endpoint || !this.apiKey) return;
+
     try {
-      // Agrupa eventos por tipo
-      const metrics = eventsToFlush.filter(e => e.type === 'metric');
-      const logs = eventsToFlush.filter(e => e.type === 'log');
-      const traces = eventsToFlush.filter(e => e.type === 'trace' || e.type === 'span');
-
-      // Envia em paralelo
-      await Promise.allSettled([
-        this.sendEvents(this.config.endpoints.metrics, metrics),
-        this.sendEvents(this.config.endpoints.logs, logs),
-        this.sendEvents(this.config.endpoints.traces, traces),
-      ]);
-
-      logger.debug(`Telemetry flushed: ${eventsToFlush.length} events`);
+      await fetch(`${this.endpoint}/${type}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          type,
+          data,
+          timestamp: new Date().toISOString(),
+          source: 'contabilease',
+        }),
+      });
     } catch (error) {
-      logger.error('Telemetry flush failed', { error });
-      
-      // Recoloca eventos na fila para retry
-      this.events.unshift(...eventsToFlush);
-    } finally {
-      this.isFlushing = false;
+      logger.error('Failed to send telemetry', { error, type, count: data.length });
     }
   }
 
-  /**
-   * Envia eventos para endpoint
-   */
-  private async sendEvents(endpoint: string, events: TelemetryEvent[]): Promise<void> {
-    if (events.length === 0) return;
+  // Flush periódico
+  private startPeriodicFlush(): void {
+    this.flushInterval = setInterval(() => {
+      this.flushEvents();
+      this.flushMetrics();
+      this.flushErrors();
+    }, 30000); // Flush a cada 30 segundos
+  }
 
-    let retries = 0;
-    while (retries < this.config.maxRetries) {
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ events }),
-        });
-
-        if (response.ok) {
-          return;
-        }
-
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      } catch (error) {
-        retries++;
-        if (retries >= this.config.maxRetries) {
-          throw error;
-        }
-        
-        // Exponential backoff
-        await this.sleep(Math.pow(2, retries) * 1000);
-      }
+  // Obter session ID
+  private getSessionId(): string {
+    if (typeof window === 'undefined') return 'server';
+    
+    let sessionId = sessionStorage.getItem('telemetry_session_id');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('telemetry_session_id', sessionId);
     }
+    return sessionId;
   }
 
-  /**
-   * Sleep utility
-   */
-  private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  // Configurar regras de alerta
+  configureAlertRules(rules: AlertRule[]): void {
+    this.alertRules = rules;
   }
 
-  /**
-   * Obtém estatísticas de telemetria
-   */
+  // Obter estatísticas
   getStats(): {
-    eventsInQueue: number;
-    isFlushing: boolean;
-    config: TelemetryConfig;
+    events: number;
+    metrics: number;
+    errors: number;
+    alerts: number;
   } {
     return {
-      eventsInQueue: this.events.length,
-      isFlushing: this.isFlushing,
-      config: { ...this.config },
+      events: this.events.length,
+      metrics: this.metrics.length,
+      errors: this.errors.length,
+      alerts: this.alertRules.filter(rule => rule.lastTriggered).length,
     };
   }
 
-  /**
-   * Atualiza configuração
-   */
-  updateConfig(updates: Partial<TelemetryConfig>): void {
-    this.config = { ...this.config, ...updates };
-    
-    if (updates.flushInterval) {
-      this.startFlushTimer();
-    }
-    
-    logger.info('Telemetry configuration updated', updates);
-  }
-
-  /**
-   * Destrói o manager
-   */
+  // Limpeza
   destroy(): void {
-    if (this.flushTimer) {
-      clearInterval(this.flushTimer);
-      this.flushTimer = null;
+    if (this.flushInterval) {
+      clearInterval(this.flushInterval);
     }
-    
-    this.flush();
+    this.flushEvents();
+    this.flushMetrics();
+    this.flushErrors();
   }
 }
 
-// Instância singleton
-export const telemetryManager = new TelemetryManager();
+// Instância global
+export const telemetry = new TelemetryManager();
 
-/**
- * Funções de conveniência para telemetria
- */
-export function recordMetric(data: MetricData): void {
-  telemetryManager.recordMetric(data);
-}
+// Configurar regras de alerta padrão
+telemetry.configureAlertRules([
+  {
+    id: 'api_slow_response',
+    name: 'API Slow Response',
+    metric: 'api.call',
+    threshold: 2000,
+    operator: 'gt',
+    severity: 'medium',
+    enabled: true,
+    cooldown: 300, // 5 minutos
+  },
+  {
+    id: 'page_slow_load',
+    name: 'Page Slow Load',
+    metric: 'page.load_time',
+    threshold: 3000,
+    operator: 'gt',
+    severity: 'medium',
+    enabled: true,
+    cooldown: 600, // 10 minutos
+  },
+  {
+    id: 'high_error_rate',
+    name: 'High Error Rate',
+    metric: 'error.rate',
+    threshold: 10,
+    operator: 'gt',
+    severity: 'high',
+    enabled: true,
+    cooldown: 300, // 5 minutos
+  },
+  {
+    id: 'memory_usage_high',
+    name: 'High Memory Usage',
+    metric: 'memory.usage',
+    threshold: 100 * 1024 * 1024, // 100MB
+    operator: 'gt',
+    severity: 'high',
+    enabled: true,
+    cooldown: 600, // 10 minutos
+  },
+]);
 
-export function recordLog(data: LogData): void {
-  telemetryManager.recordLog(data);
-}
-
-export function startTrace(operationName: string, tags?: Record<string, string>): string {
-  return telemetryManager.startTrace(operationName, tags);
-}
-
-export function finishTrace(spanId: string, tags?: Record<string, string>): void {
-  telemetryManager.finishTrace(spanId, tags);
-}
-
-export function createSpan(operationName: string, parentSpanId?: string, tags?: Record<string, string>): string {
-  return telemetryManager.createSpan(operationName, parentSpanId, tags);
-}
-
-export function finishSpan(spanId: string, tags?: Record<string, string>): void {
-  telemetryManager.finishSpan(spanId, tags);
-}
-
-/**
- * Decorator para telemetria automática
- */
-export function withTelemetry(operationName: string, tags?: Record<string, string>) {
-  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-
-    descriptor.value = async function (...args: unknown[]) {
-      const spanId = createSpan(`${operationName}.${propertyKey}`, undefined, tags);
-      
-      try {
-        const result = await originalMethod.apply(this, args);
-        
-        recordMetric({
-          name: `${operationName}.${propertyKey}.success`,
-          value: 1,
-          tags: { ...tags, status: 'success' },
-        });
-        
-        return result;
-      } catch (error) {
-        recordMetric({
-          name: `${operationName}.${propertyKey}.error`,
-          value: 1,
-          tags: { ...tags, status: 'error', error: error instanceof Error ? error.message : 'Unknown' },
-        });
-        
-        throw error;
-      } finally {
-        finishSpan(spanId);
-      }
-    };
-
-    return descriptor;
-  };
-}
-
-/**
- * Hook para telemetria em componentes React
- */
+// Hooks para React
 export function useTelemetry() {
-  const recordMetric = React.useCallback((data: MetricData) => {
-    telemetryManager.recordMetric(data);
-  }, []);
-
-  const recordLog = React.useCallback((data: LogData) => {
-    telemetryManager.recordLog(data);
-  }, []);
-
-  const startTrace = React.useCallback((operationName: string, tags?: Record<string, string>) => {
-    return telemetryManager.startTrace(operationName, tags);
-  }, []);
-
-  const finishTrace = React.useCallback((spanId: string, tags?: Record<string, string>) => {
-    telemetryManager.finishTrace(spanId, tags);
-  }, []);
-
   return {
-    recordMetric,
-    recordLog,
-    startTrace,
-    finishTrace,
-    stats: telemetryManager.getStats(),
+    trackEvent: telemetry.trackEvent.bind(telemetry),
+    trackPerformance: telemetry.trackPerformance.bind(telemetry),
+    trackError: telemetry.trackError.bind(telemetry),
+    trackBusinessMetric: telemetry.trackBusinessMetric.bind(telemetry),
+    trackAPICall: telemetry.trackAPICall.bind(telemetry),
+    trackPageView: telemetry.trackPageView.bind(telemetry),
+    trackUserAction: telemetry.trackUserAction.bind(telemetry),
+    trackWebVitals: telemetry.trackWebVitals.bind(telemetry),
   };
 }
 
-/**
- * Utilitários para métricas comuns
- */
-export const metrics = {
-  // Métricas de performance
-  performance: {
-    pageLoad: (duration: number, page: string) => recordMetric({
-      name: 'page.load.duration',
-      value: duration,
-      unit: 'ms',
-      tags: { page },
-    }),
+// Middleware para Next.js
+export function withTelemetry(handler: any) {
+  return async (req: any, res: any) => {
+    const startTime = Date.now();
     
-    apiCall: (duration: number, endpoint: string, status: string) => recordMetric({
-      name: 'api.call.duration',
-      value: duration,
-      unit: 'ms',
-      tags: { endpoint, status },
-    }),
-    
-    renderTime: (duration: number, component: string) => recordMetric({
-      name: 'component.render.duration',
-      value: duration,
-      unit: 'ms',
-      tags: { component },
-    }),
-  },
+    try {
+      const result = await handler(req, res);
+      const duration = Date.now() - startTime;
+      
+      telemetry.trackAPICall(req.url, req.method, res.statusCode, duration);
+      
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      telemetry.trackError({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        component: 'api',
+        timestamp: new Date().toISOString(),
+        context: {
+          url: req.url,
+          method: req.method,
+          duration,
+        },
+      });
+      
+      throw error;
+    }
+  };
+}
+
+// Inicialização
+export function initializeTelemetry() {
+  if (typeof window === 'undefined') return;
+
+  // Track page views
+  telemetry.trackPageView(window.location.pathname);
   
-  // Métricas de negócio
-  business: {
-    userAction: (action: string, userId?: string) => recordMetric({
-      name: 'user.action',
-      value: 1,
-      tags: { action, userId: userId || 'anonymous' },
-    }),
-    
-    contractCreated: (userId: string, contractType: string) => recordMetric({
-      name: 'contract.created',
-      value: 1,
-      tags: { userId, contractType },
-    }),
-    
-    calculationPerformed: (userId: string, calculationType: string) => recordMetric({
-      name: 'calculation.performed',
-      value: 1,
-      tags: { userId, calculationType },
-    }),
-  },
+  // Track web vitals
+  if ('web-vitals' in window) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(telemetry.trackWebVitals);
+      getFID(telemetry.trackWebVitals);
+      getFCP(telemetry.trackWebVitals);
+      getLCP(telemetry.trackWebVitals);
+      getTTFB(telemetry.trackWebVitals);
+    });
+  }
   
-  // Métricas de erro
-  errors: {
-    javascriptError: (error: string, page: string) => recordMetric({
-      name: 'error.javascript',
-      value: 1,
-      tags: { error, page },
-    }),
-    
-    apiError: (endpoint: string, status: number) => recordMetric({
-      name: 'error.api',
-      value: 1,
-      tags: { endpoint, status: status.toString() },
-    }),
-    
-    validationError: (field: string, rule: string) => recordMetric({
-      name: 'error.validation',
-      value: 1,
-      tags: { field, rule },
-    }),
-  },
-};
+  logger.info('Telemetry initialized');
+}

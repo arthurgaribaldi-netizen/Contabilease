@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { logger } from './src/lib/logger';
 import { generateCSPWithNonce } from './src/lib/security/content-security-policy';
 import { addSecurityHeaders, securityMiddleware } from './src/middleware/security';
+import { supabaseSecurityMiddleware } from './src/middleware/supabase-security';
 
 // Middleware de internacionalização
 const intlMiddleware = createMiddleware({
@@ -19,28 +20,34 @@ export default async function middleware(request: NextRequest) {
   const startTime = Date.now();
   
   try {
-    // 1. Basic Security Checks
+    // 1. Supabase Security Middleware (Rate limiting, auth validation, etc.)
+    const supabaseSecurityResponse = await supabaseSecurityMiddleware(request, request.nextUrl.pathname);
+    if (supabaseSecurityResponse) {
+      return supabaseSecurityResponse;
+    }
+
+    // 2. Basic Security Checks
     const securityResponse = securityMiddleware(request);
     if (securityResponse) {
       return securityResponse;
     }
 
-    // 2. Apply internationalization middleware
+    // 3. Apply internationalization middleware
     const response = intlMiddleware(request);
 
-    // 3. Generate CSP with nonce
+    // 4. Generate CSP with nonce
     const { csp, nonce } = generateCSPWithNonce();
     
-    // 4. Apply security headers with CSP
+    // 5. Apply security headers with CSP
     const securedResponse = addSecurityHeaders(response);
     securedResponse.headers.set('Content-Security-Policy', csp);
     securedResponse.headers.set('X-Content-Security-Policy-Nonce', nonce);
 
-    // 5. Add performance headers
+    // 6. Add performance headers
     securedResponse.headers.set('X-Response-Time', `${Date.now() - startTime}ms`);
     securedResponse.headers.set('X-Request-ID', `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
-    // 6. Log request for telemetry
+    // 7. Log request for telemetry
     logger.info('Request processed', {
       method: request.method,
       url: request.url,

@@ -378,15 +378,15 @@ const cspManager = new CSPManager();
  */
 export const cspConfigs = {
   development: {
-    mode: 'permissive' as const,
+    mode: 'balanced' as const,
     environment: 'development' as const,
     features: {
       inlineScripts: true,
       inlineStyles: true,
-      eval: true,
+      eval: false, // Desabilitar eval mesmo em desenvolvimento
       unsafeInline: true,
       dataUrls: true,
-      blobUrls: true,
+      blobUrls: false, // Desabilitar blob URLs
     },
     trustedDomains: ['localhost:*'],
   },
