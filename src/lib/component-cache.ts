@@ -1,4 +1,4 @@
-import { ComponentType, ReactElement } from 'react';
+import React, { ComponentType, ReactElement } from 'react';
 
 interface CacheEntry<T> {
   component: ReactElement<T>;
@@ -33,8 +33,7 @@ class ComponentCache<T = any> {
   private isExpired(entry: CacheEntry<T>): boolean {
     const now = Date.now();
     return (
-      now - entry.timestamp > this.options.maxAge ||
-      now - entry.lastAccessed > this.options.ttl
+      now - entry.timestamp > this.options.maxAge || now - entry.lastAccessed > this.options.ttl
     );
   }
 

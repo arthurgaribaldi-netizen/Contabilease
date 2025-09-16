@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -29,14 +29,15 @@ interface AuthFormState {
 // Authentication logic helper
 function performAuth(mode: 'login' | 'register', state: AuthFormState) {
   const { email, password, confirmPassword } = state;
-  
+
   if (mode === 'register' && password !== confirmPassword) {
     return Promise.reject(new Error('As senhas não coincidem'));
   }
 
-  const authMethod = mode === 'register' 
-    ? () => supabase.auth.signUp({ email, password })
-    : () => supabase.auth.signInWithPassword({ email, password });
+  const authMethod =
+    mode === 'register'
+      ? () => supabase.auth.signUp({ email, password })
+      : () => supabase.auth.signInWithPassword({ email, password });
 
   return authMethod();
 }
@@ -48,28 +49,84 @@ function useAuthForm(mode: 'login' | 'register') {
   const router = useRouter();
   const pathname = usePathname();
   const [state, setState] = useState<AuthFormState>({
-    email: '', password: '', confirmPassword: '', loading: false, message: ''
+    email: '',
+    password: '',
+    confirmPassword: '',
+    loading: false,
+    message: '',
   });
 
-  const updateState = (updates: Partial<AuthFormState>) => setState(prev => ({ ...prev, ...updates }));
+  const updateState = (updates: Partial<AuthFormState>) =>
+    setState(prev => ({ ...prev, ...updates }));
+
+  const validateForm = () => {
+    const { email, password, confirmPassword } = state;
+
+    // Validação de email obrigatório
+    if (!email || !email.trim()) {
+      throw new Error('Email é obrigatório');
+    }
+
+    // Validação de senha obrigatória
+    if (!password || !password.trim()) {
+      throw new Error('Senha é obrigatória');
+    }
+
+    // Validação de formato de email
+    if (!email.includes('@')) {
+      throw new Error('Email inválido');
+    }
+
+    // Validação de comprimento da senha
+    if (password.length < 6) {
+      throw new Error('Senha deve ter pelo menos 6 caracteres');
+    }
+
+    // Validação de confirmação de senha (apenas no modo registro)
+    if (mode === 'register' && password !== confirmPassword) {
+      throw new Error('As senhas não coincidem');
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateState({ loading: true, message: '' });
-    
+
+    try {
+      validateForm();
+    } catch (error) {
+      // Validation error handled by error state
+      updateState({
+        message: error instanceof Error ? error.message : 'Erro de validação',
+        loading: false,
+      });
+      return;
+    }
+
     performAuth(mode, state)
       .then(({ error }) => {
         if (error) throw error;
-        
+
         const successMessage = mode === 'register' ? t('registerSuccess') : t('loginSuccess');
-        updateState({ message: successMessage });
-        
+        updateState({
+          message: successMessage,
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+
         const locale = pathname?.split('/')?.[1] ?? 'pt-BR';
         router.push(`/${locale}/dashboard`);
       })
-      .catch((error: unknown) => updateState({ 
-        message: error instanceof Error ? error.message : 'Erro desconhecido' 
-      }))
+      .catch((error: unknown) => {
+        let errorMessage = 'Erro desconhecido';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (error && typeof error === 'object' && 'message' in error) {
+          errorMessage = String(error.message);
+        }
+        updateState({ message: errorMessage });
+      })
       .finally(() => updateState({ loading: false }));
   };
 
@@ -77,13 +134,13 @@ function useAuthForm(mode: 'login' | 'register') {
 }
 
 // Reusable input component with specific classes
-function AuthInput({ 
-  id, 
-  type, 
-  value, 
-  onChange, 
-  label, 
-  required = false 
+function AuthInput({
+  id,
+  type,
+  value,
+  onChange,
+  label,
+  required = false,
 }: {
   id: string;
   type: string;
@@ -93,8 +150,11 @@ function AuthInput({
   required?: boolean;
 }) {
   return (
-    <div className="contabilease-auth contabilease-form">
-      <label htmlFor={id} className='contabilease-auth contabilease-form contabilease-text-gray-700 block text-sm font-medium'>
+    <div className='contabilease-auth contabilease-form'>
+      <label
+        htmlFor={id}
+        className='contabilease-auth contabilease-form contabilease-text-gray-700 block text-sm font-medium'
+      >
         {label}
       </label>
       <input
@@ -103,6 +163,7 @@ function AuthInput({
         value={value}
         onChange={onChange}
         required={required}
+        noValidate
         className='contabilease-auth contabilease-form contabilease-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500'
       />
     </div>
@@ -112,22 +173,26 @@ function AuthInput({
 // Message display component with specific classes
 function MessageDisplay({ message }: { message: string }) {
   if (!message) return null;
-  
+
   const isSuccess = message.includes('sucesso') || message.includes('success');
   return (
-    <div className={`contabilease-auth contabilease-form mt-4 p-3 rounded-md ${
-      isSuccess ? 'contabilease-bg-green-100 contabilease-text-green-700 bg-green-100 text-green-700' : 'contabilease-bg-red-100 contabilease-text-red-700 bg-red-100 text-red-700'
-    }`}>
+    <div
+      className={`contabilease-auth contabilease-form mt-4 p-3 rounded-md ${
+        isSuccess
+          ? 'contabilease-bg-green-100 contabilease-text-green-700 bg-green-100 text-green-700'
+          : 'contabilease-bg-red-100 contabilease-text-red-700 bg-red-100 text-red-700'
+      }`}
+    >
       {message}
     </div>
   );
 }
 
 // Basic form fields (email and password)
-function BasicFormFields({ 
-  state, 
-  updateState, 
-  t 
+function BasicFormFields({
+  state,
+  updateState,
+  t,
 }: {
   state: AuthFormState;
   updateState: (updates: Partial<AuthFormState>) => void;
@@ -156,10 +221,10 @@ function BasicFormFields({
 }
 
 // Confirm password field for registration
-function ConfirmPasswordField({ 
-  state, 
-  updateState, 
-  t 
+function ConfirmPasswordField({
+  state,
+  updateState,
+  t,
 }: {
   state: AuthFormState;
   updateState: (updates: Partial<AuthFormState>) => void;
@@ -178,11 +243,11 @@ function ConfirmPasswordField({
 }
 
 // Form fields component
-function AuthFormFields({ 
-  mode, 
-  state, 
-  updateState, 
-  t 
+function AuthFormFields({
+  mode,
+  state,
+  updateState,
+  t,
 }: {
   mode: 'login' | 'register';
   state: AuthFormState;
@@ -200,11 +265,11 @@ function AuthFormFields({
 }
 
 // Submit button component
-function AuthSubmitButton({ 
-  mode, 
-  loading, 
-  t, 
-  tCommon 
+function AuthSubmitButton({
+  mode,
+  loading,
+  t,
+  tCommon,
 }: {
   mode: 'login' | 'register';
   loading: boolean;
@@ -232,7 +297,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         {mode === 'login' ? t('login') : t('register')}
       </h2>
 
-      <form onSubmit={handleSubmit} className='space-y-4'>
+      <form onSubmit={handleSubmit} className='space-y-4' noValidate>
         <AuthFormFields mode={mode} state={state} updateState={updateState} t={t} />
         <AuthSubmitButton mode={mode} loading={state.loading} t={t} tCommon={tCommon} />
       </form>
@@ -240,9 +305,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
       <MessageDisplay message={state.message} />
 
       <div className='mt-4 text-center'>
-        <button 
+        <button
           type='button'
-          onClick={() => {/* TODO: Implementar reset de senha */}}
+          onClick={() => {
+            // Password reset functionality will be implemented in future release
+            // TODO: Implement password reset functionality
+          }}
           className='text-sm text-primary-600 hover:text-primary-500 bg-transparent border-none cursor-pointer'
         >
           {t('forgotPassword')}

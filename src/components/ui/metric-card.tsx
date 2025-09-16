@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { TrendingDownIcon, TrendingUpIcon } from '@heroicons/react/24/outline';
+import { ArrowTrendingDownIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { AnimatedCounter } from './animated-counter';
 
@@ -42,9 +42,9 @@ export function MetricCard({
   const getChangeIcon = () => {
     switch (changeType) {
       case 'increase':
-        return <TrendingUpIcon className='h-4 w-4' />;
+        return <ArrowTrendingUpIcon className='h-4 w-4' />;
       case 'decrease':
-        return <TrendingDownIcon className='h-4 w-4' />;
+        return <ArrowTrendingDownIcon className='h-4 w-4' />;
       default:
         return null;
     }

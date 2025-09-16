@@ -2,16 +2,17 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 'use client';
 
-import { useState } from 'react';
 import { Contract } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { ContractFormData } from '@/lib/schemas/contract';
+import { useState } from 'react';
 import IFRS16CalculationResults from './IFRS16CalculationResults';
 
 interface ContractDetailsProps {
@@ -144,7 +145,14 @@ export default function ContractDetails({
       await onSave(formattedData);
       setIsEditing(false);
     } catch (error) {
-      console.error('Error saving contract:', error);
+      logger.error(
+        'Error saving contract:',
+        {
+          component: 'contractdetails',
+          operation: 'saveContract',
+        },
+        error as Error
+      );
     }
   };
 

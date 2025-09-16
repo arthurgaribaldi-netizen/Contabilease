@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { logger } from './logger';
 
 interface UserBehavior {
   pageViews: Record<string, number>;
@@ -61,7 +62,14 @@ export function useAIPersonalization(): AIPersonalizationHook {
           lastActive: new Date(parsed.lastActive),
         });
       } catch (error) {
-        console.error('Error loading user behavior:', error);
+        logger.error(
+          'Error loading user behavior',
+          {
+            component: 'ai-personalization',
+            operation: 'loadUserBehavior',
+          },
+          error as Error
+        );
       }
     }
   }, []);

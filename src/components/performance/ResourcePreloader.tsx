@@ -28,11 +28,7 @@ export default function ResourcePreloader({ resources = [] }: ResourcePreloaderP
     });
 
     // Preload critical routes
-    const criticalRoutes = [
-      '/dashboard',
-      '/contracts',
-      '/contracts/new',
-    ];
+    const criticalRoutes = ['/dashboard', '/contracts', '/contracts/new'];
 
     criticalRoutes.forEach(route => {
       const link = document.createElement('link');
@@ -42,7 +38,7 @@ export default function ResourcePreloader({ resources = [] }: ResourcePreloaderP
     });
 
     // Preload critical images (if any)
-    const criticalImages = [
+    const criticalImages: string[] = [
       // Add any critical images here
     ];
 
@@ -55,7 +51,7 @@ export default function ResourcePreloader({ resources = [] }: ResourcePreloaderP
     });
 
     // Preload critical CSS
-    const criticalCSS = [
+    const criticalCSS: string[] = [
       // Add any critical CSS files here
     ];
 
@@ -68,11 +64,7 @@ export default function ResourcePreloader({ resources = [] }: ResourcePreloaderP
     });
 
     // Preload critical JavaScript modules
-    const criticalModules = [
-      'framer-motion',
-      'chart.js',
-      'three',
-    ];
+    const criticalModules = ['framer-motion', 'chart.js', 'three'];
 
     criticalModules.forEach(module => {
       const link = document.createElement('link');
@@ -80,7 +72,6 @@ export default function ResourcePreloader({ resources = [] }: ResourcePreloaderP
       link.href = `/node_modules/${module}/index.js`;
       document.head.appendChild(link);
     });
-
   }, [resources]);
 
   return null;

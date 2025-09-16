@@ -1,9 +1,11 @@
 /**
  * CSS Specificity Utilities for Contabilease
- * 
+ *
  * Este arquivo fornece utilitários para aplicar classes CSS específicas
  * que evitam conflitos futuros e melhoram a manutenibilidade do código.
  */
+
+import { logger } from './logger';
 
 /**
  * Namespace base da aplicação
@@ -18,11 +20,11 @@ export const SPECIFIC_CLASSES = {
   app: `${CSS_NAMESPACE}-app`,
   container: `${CSS_NAMESPACE}-container`,
   minHeightScreen: `${CSS_NAMESPACE}-min-h-screen`,
-  
+
   // Tipografia
   heading: `${CSS_NAMESPACE}-heading`,
   paragraph: `${CSS_NAMESPACE}-paragraph`,
-  
+
   // Componentes UI
   button: `${CSS_NAMESPACE}-button`,
   card: `${CSS_NAMESPACE}-card`,
@@ -34,18 +36,18 @@ export const SPECIFIC_CLASSES = {
   input: `${CSS_NAMESPACE}-input`,
   form: `${CSS_NAMESPACE}-form`,
   modal: `${CSS_NAMESPACE}-modal`,
-  
+
   // Contextos específicos
   auth: `${CSS_NAMESPACE}-auth`,
   dashboard: `${CSS_NAMESPACE}-dashboard`,
   contracts: `${CSS_NAMESPACE}-contracts`,
-  
+
   // Estados e animações
   tourHighlight: `${CSS_NAMESPACE}-tour-highlight`,
   animateShake: `${CSS_NAMESPACE}-animate-shake`,
   animateFadeIn: `${CSS_NAMESPACE}-animate-fade-in`,
   highContrast: `${CSS_NAMESPACE}-high-contrast`,
-  
+
   // Cores específicas
   bgWhite: `${CSS_NAMESPACE}-bg-white`,
   bgGray50: `${CSS_NAMESPACE}-bg-gray-50`,
@@ -111,8 +113,8 @@ export function useSpecificClasses() {
 /**
  * Tipos TypeScript para as classes específicas
  */
-export type SpecificClass = typeof SPECIFIC_CLASSES[keyof typeof SPECIFIC_CLASSES];
-export type ContextualClass = typeof CONTEXTUAL_CLASSES[keyof typeof CONTEXTUAL_CLASSES];
+export type SpecificClass = (typeof SPECIFIC_CLASSES)[keyof typeof SPECIFIC_CLASSES];
+export type ContextualClass = (typeof CONTEXTUAL_CLASSES)[keyof typeof CONTEXTUAL_CLASSES];
 
 /**
  * Validação de classes específicas
@@ -132,21 +134,17 @@ export function extractContextFromClass(className: string): string | null {
 /**
  * Gera classes específicas dinamicamente
  */
-export function generateSpecificClass(
-  component: string,
-  variant?: string,
-  state?: string
-): string {
+export function generateSpecificClass(component: string, variant?: string, state?: string): string {
   let className = `${CSS_NAMESPACE}-${component}`;
-  
+
   if (variant) {
     className += `-${variant}`;
   }
-  
+
   if (state) {
     className += `-${state}`;
   }
-  
+
   return className;
 }
 
@@ -154,13 +152,25 @@ export function generateSpecificClass(
  * Utilitário para debugging de classes específicas
  */
 export function debugSpecificClasses(element: HTMLElement): void {
-  const specificClasses = Array.from(element.classList).filter(className => 
+  const specificClasses = Array.from(element.classList).filter(className =>
     className.startsWith(CSS_NAMESPACE)
   );
-  
-  console.group(`🔍 Specific Classes Debug - ${element.tagName}`);
-  console.log('Element:', element);
-  console.log('Specific Classes:', specificClasses);
-  console.log('Context:', specificClasses.map(extractContextFromClass).filter(Boolean));
-  console.groupEnd();
+
+  // Debug logging for development
+  if (process.env.NODE_ENV === 'development') {
+    logger.debug(
+      `Specific Classes Debug - ${element.tagName}`,
+      {
+        component: 'css-specificity',
+        operation: 'debugSpecificClasses',
+        tagName: element.tagName,
+      },
+      undefined,
+      {
+        element: element,
+        specificClasses,
+        context: specificClasses.map(extractContextFromClass).filter(Boolean),
+      }
+    );
+  }
 }

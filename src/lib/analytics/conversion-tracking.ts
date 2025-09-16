@@ -1,6 +1,6 @@
 /**
  * Sistema de Tracking de Conversão - Micro SaaS 2025
- * 
+ *
  * Implementa tracking completo do funil de conversão:
  * - Visitor → Signup → Trial → Paid
  * - Métricas de engajamento
@@ -9,8 +9,17 @@
  * - Heatmaps e comportamento
  */
 
+import { logger } from '../logger';
+
 export interface ConversionEvent {
-  eventType: 'page_view' | 'signup' | 'trial_start' | 'trial_end' | 'paid_conversion' | 'churn' | 'feature_usage';
+  eventType:
+    | 'page_view'
+    | 'signup'
+    | 'trial_start'
+    | 'trial_end'
+    | 'paid_conversion'
+    | 'churn'
+    | 'feature_usage';
   userId?: string;
   sessionId: string;
   timestamp: Date;
@@ -122,7 +131,12 @@ export class ConversionTracker {
   /**
    * Track paid conversion
    */
-  trackPaidConversion(userId: string, plan: string, revenue: number, properties: Record<string, any> = {}): void {
+  trackPaidConversion(
+    userId: string,
+    plan: string,
+    revenue: number,
+    properties: Record<string, any> = {}
+  ): void {
     this.track('paid_conversion', {
       userId,
       plan,
@@ -157,7 +171,7 @@ export class ConversionTracker {
    * Calculate conversion funnel
    */
   calculateFunnel(steps: string[], dateRange?: { start: Date; end: Date }): FunnelStep[] {
-    const filteredEvents = dateRange 
+    const filteredEvents = dateRange
       ? this.events.filter(e => e.timestamp >= dateRange.start && e.timestamp <= dateRange.end)
       : this.events;
 
@@ -167,7 +181,7 @@ export class ConversionTracker {
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
       const stepEvents = filteredEvents.filter(e => e.eventType === step);
-      
+
       const visitors = i === 0 ? stepEvents.length : previousVisitors;
       const conversions = stepEvents.length;
       const conversionRate = visitors > 0 ? (conversions / visitors) * 100 : 0;
@@ -198,7 +212,7 @@ export class ConversionTracker {
       .filter(e => e.eventType === 'signup')
       .forEach(event => {
         const cohort = event.timestamp.toISOString().substring(0, 7); // YYYY-MM
-        
+
         if (!cohorts.has(cohort)) {
           cohorts.set(cohort, {
             cohort,
@@ -215,10 +229,12 @@ export class ConversionTracker {
     // Calculate retention and revenue for each cohort
     cohorts.forEach((cohortData, cohort) => {
       const cohortStart = new Date(cohort + '-01');
-      
+
       // Get users who signed up in this cohort
       const cohortUsers = this.events
-        .filter(e => e.eventType === 'signup' && e.timestamp.toISOString().substring(0, 7) === cohort)
+        .filter(
+          e => e.eventType === 'signup' && e.timestamp.toISOString().substring(0, 7) === cohort
+        )
         .map(e => e.properties.userId);
 
       // Calculate retention rates
@@ -235,7 +251,12 @@ export class ConversionTracker {
       const day14Revenue = this.calculateRevenue(cohortUsers, cohortStart, 14);
       const day30Revenue = this.calculateRevenue(cohortUsers, cohortStart, 30);
 
-      cohortData.revenue = { day1: day1Revenue, day7: day7Revenue, day14: day14Revenue, day30: day30Revenue };
+      cohortData.revenue = {
+        day1: day1Revenue,
+        day7: day7Revenue,
+        day14: day14Revenue,
+        day30: day30Revenue,
+      };
     });
 
     return Array.from(cohorts.values()).sort((a, b) => a.cohort.localeCompare(b.cohort));
@@ -258,14 +279,18 @@ export class ConversionTracker {
     endDate.setDate(endDate.getDate() + days);
 
     return userIds.reduce((total, userId) => {
-      const revenueEvents = this.events.filter(e => 
-        e.properties.userId === userId && 
-        e.eventType === 'paid_conversion' &&
-        e.timestamp >= cohortStart && 
-        e.timestamp <= endDate
+      const revenueEvents = this.events.filter(
+        e =>
+          e.properties.userId === userId &&
+          e.eventType === 'paid_conversion' &&
+          e.timestamp >= cohortStart &&
+          e.timestamp <= endDate
       );
 
-      const userRevenue = revenueEvents.reduce((sum, event) => sum + (event.properties.revenue || 0), 0);
+      const userRevenue = revenueEvents.reduce(
+        (sum, event) => sum + (event.properties.revenue || 0),
+        0
+      );
       return total + userRevenue;
     }, 0);
   }
@@ -293,11 +318,11 @@ export class ConversionTracker {
    */
   analyzeABTest(testId: string): ABTest | null {
     const testEvents = this.events.filter(e => e.properties.testId === testId);
-    
+
     if (testEvents.length === 0) return null;
 
     const variants = new Map<string, { conversions: number; revenue: number }>();
-    
+
     testEvents.forEach(event => {
       const variant = event.properties.variant;
       if (!variants.has(variant)) {
@@ -329,14 +354,16 @@ export class ConversionTracker {
     return test;
   }
 
-  private calculateConfidence(variants: Map<string, { conversions: number; revenue: number }>): number {
+  private calculateConfidence(
+    variants: Map<string, { conversions: number; revenue: number }>
+  ): number {
     // Simplified confidence calculation
     const variantData = Array.from(variants.values());
     if (variantData.length < 2) return 0;
 
     const [variantA, variantB] = variantData;
     const totalConversions = variantA.conversions + variantB.conversions;
-    
+
     if (totalConversions === 0) return 0;
 
     // Basic statistical significance calculation
@@ -350,7 +377,7 @@ export class ConversionTracker {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash);
@@ -361,8 +388,19 @@ export class ConversionTracker {
    */
   private sendToAnalytics(event: ConversionEvent): void {
     // In production, send to analytics service (Google Analytics, Mixpanel, etc.)
-    console.log('Analytics Event:', event);
-    
+    logger.info(
+      'Analytics Event',
+      {
+        component: 'conversion-tracking',
+        operation: 'sendToAnalytics',
+        eventType: event.eventType,
+      },
+      undefined,
+      {
+        event,
+      }
+    );
+
     // Example: Send to Google Analytics 4
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', event.eventType, {
@@ -426,7 +464,12 @@ export function useConversionTracking() {
     conversionTracker.trackTrialStart(userId, properties);
   };
 
-  const trackPaidConversion = (userId: string, plan: string, revenue: number, properties?: Record<string, any>) => {
+  const trackPaidConversion = (
+    userId: string,
+    plan: string,
+    revenue: number,
+    properties?: Record<string, any>
+  ) => {
     conversionTracker.trackPaidConversion(userId, plan, revenue, properties);
   };
 

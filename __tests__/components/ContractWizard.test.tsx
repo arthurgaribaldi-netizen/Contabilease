@@ -3,6 +3,7 @@ import { Contract } from '@/lib/contracts';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { getTranslation, renderWithI18n } from '../utils/test-i18n';
 
 // Mock the toast hook
 jest.mock('@/components/ui/Toast', () => ({
@@ -18,7 +19,7 @@ jest.mock('@/components/ui/ConfirmationModal', () => {
     const { isOpen, onConfirm, onCancel, title, message } = props;
     if (!isOpen) return null;
     return (
-      <div data-testid="confirmation-modal">
+      <div data-testid='confirmation-modal'>
         <h2>{title}</h2>
         <p>{message}</p>
         <button onClick={onConfirm}>Confirmar</button>
@@ -31,10 +32,10 @@ jest.mock('@/components/ui/ConfirmationModal', () => {
 // Mock the loading spinner
 jest.mock('@/components/ui/LoadingSpinner', () => ({
   LoadingButton: (props: any) => {
-    const { children, loading, ...restProps } = props;
+    const { children, isLoading, ...restProps } = props;
     return (
-      <button disabled={loading} {...restProps}>
-        {loading ? 'Carregando...' : children}
+      <button disabled={isLoading} {...restProps}>
+        {isLoading ? 'Carregando...' : children}
       </button>
     );
   },
@@ -75,7 +76,7 @@ describe('ContractWizard', () => {
 
   describe('Rendering', () => {
     it('should render wizard with all steps', () => {
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Check step titles in the progress bar
       expect(screen.getAllByText('Informações Básicas')).toHaveLength(2); // Progress bar and step header
@@ -85,7 +86,7 @@ describe('ContractWizard', () => {
     });
 
     it('should render first step by default', () => {
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       expect(screen.getAllByText('Título e status do contrato')[0]).toBeInTheDocument();
     });
@@ -98,22 +99,20 @@ describe('ContractWizard', () => {
     });
 
     it('should show loading state when isLoading is true', () => {
-      render(<ContractWizard {...defaultProps} isLoading={true} />);
+      renderWithI18n(<ContractWizard {...defaultProps} isLoading={true} />);
 
-      // Check if the loading button shows loading spinner
-      const nextButton = screen.getByRole('button', { name: /próximo/i });
+      // Check if the loading button shows loading text
+      const nextButton = screen.getByRole('button', { name: /carregando/i });
       expect(nextButton).toBeInTheDocument();
-      // Check if loading spinner is present
-      expect(nextButton.querySelector('svg')).toBeInTheDocument();
-      // The button should be disabled when loading - check the disabled attribute
-      expect(nextButton).toHaveAttribute('disabled');
+      // The button should be disabled when loading
+      expect(nextButton).toBeDisabled();
     });
   });
 
   describe('Navigation', () => {
     it('should navigate to next step when Next button is clicked', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill required fields for first step
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -128,7 +127,7 @@ describe('ContractWizard', () => {
 
     it('should navigate to previous step when Previous button is clicked', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill first step and go to second
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -143,7 +142,7 @@ describe('ContractWizard', () => {
     });
 
     it('should disable Previous button on first step', () => {
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // The Previous button should not be visible on the first step
       expect(screen.queryByText('Anterior')).not.toBeInTheDocument();
@@ -153,7 +152,7 @@ describe('ContractWizard', () => {
   describe('Form Validation', () => {
     it('should show error for empty required fields', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Try to go to next step without filling required fields
       await user.click(screen.getByText('Próximo'));
@@ -163,7 +162,7 @@ describe('ContractWizard', () => {
 
     it('should validate contract value is greater than zero', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill first step
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -175,12 +174,14 @@ describe('ContractWizard', () => {
       await user.type(contractValueInput, '0');
       await user.click(screen.getByText('Próximo'));
 
-      expect(screen.getByText('Valor deve ser maior que zero')).toBeInTheDocument();
+      expect(
+        screen.getByText(getTranslation('contracts.validation.valueMustBePositive'))
+      ).toBeInTheDocument();
     });
 
     it('should validate contract term is between 1 and 600 months', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill first step
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -192,12 +193,14 @@ describe('ContractWizard', () => {
       await user.type(termInput, '700');
       await user.click(screen.getByText('Próximo'));
 
-      expect(screen.getByText('Prazo deve ser entre 1 e 600 meses')).toBeInTheDocument();
+      expect(
+        screen.getByText(getTranslation('contracts.validation.termMustBeValid'))
+      ).toBeInTheDocument();
     });
 
     it('should validate interest rate is between 0% and 100%', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill first step
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -209,12 +212,14 @@ describe('ContractWizard', () => {
       await user.type(interestRateInput, '150');
       await user.click(screen.getByText('Próximo'));
 
-      expect(screen.getByText('Taxa deve ser entre 0% e 100%')).toBeInTheDocument();
+      expect(
+        screen.getByText(getTranslation('contracts.validation.rateMustBeValid'))
+      ).toBeInTheDocument();
     });
 
     it('should clear errors when user starts typing', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Try to go to next step without filling required fields
       await user.click(screen.getByText('Próximo'));
@@ -223,7 +228,7 @@ describe('ContractWizard', () => {
       // Start typing in the field
       const titleInput = screen.getByLabelText('Título do Contrato *');
       await user.type(titleInput, 'Test');
-      
+
       // Error should be cleared
       expect(screen.queryByText('Este campo é obrigatório')).not.toBeInTheDocument();
     });
@@ -232,7 +237,7 @@ describe('ContractWizard', () => {
   describe('Form Submission', () => {
     it('should submit form with valid data', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill all required fields
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -283,8 +288,8 @@ describe('ContractWizard', () => {
     it('should handle submission errors', async () => {
       const user = userEvent.setup();
       mockOnSubmit.mockRejectedValueOnce(new Error('Submission failed'));
-      
-      render(<ContractWizard {...defaultProps} />);
+
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill and submit form
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -330,17 +335,19 @@ describe('ContractWizard', () => {
   describe('Cancel Functionality', () => {
     it('should show confirmation modal when cancel is clicked', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       await user.click(screen.getByText('Cancelar'));
 
       expect(screen.getByTestId('confirmation-modal')).toBeInTheDocument();
-      expect(screen.getByText('Cancelar criação do contrato')).toBeInTheDocument();
+      expect(
+        screen.getByText(getTranslation('contracts.wizard.cancelCreation'))
+      ).toBeInTheDocument();
     });
 
     it('should call onCancel when cancel is confirmed', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       await user.click(screen.getByText('Cancelar'));
       await user.click(screen.getByText('Confirmar'));
@@ -350,7 +357,7 @@ describe('ContractWizard', () => {
 
     it('should not call onCancel when cancel is dismissed', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       await user.click(screen.getByText('Cancelar'));
       const cancelButtons = screen.getAllByText('Cancelar');
@@ -362,7 +369,7 @@ describe('ContractWizard', () => {
 
   describe('Step Progress', () => {
     it('should show correct step status indicators', () => {
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // First step should be current - check by looking for the step description
       expect(screen.getAllByText('Título e status do contrato')).toHaveLength(2);
@@ -370,7 +377,7 @@ describe('ContractWizard', () => {
 
     it('should update step status when navigating', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill first step and navigate
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -385,7 +392,7 @@ describe('ContractWizard', () => {
   describe('Data Formatting', () => {
     it('should format currency values correctly', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Navigate to financial step
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -395,10 +402,10 @@ describe('ContractWizard', () => {
       // Enter currency value
       const contractValueInput = screen.getByLabelText('Valor do Contrato *');
       await user.type(contractValueInput, '100000');
-      
+
       // Check if the value is formatted correctly in the input
       expect(contractValueInput).toHaveValue(100000);
-      
+
       // Test currency formatting function directly
       const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -406,13 +413,13 @@ describe('ContractWizard', () => {
           currency: 'BRL',
         }).format(value);
       };
-      
+
       expect(formatCurrency(100000)).toMatch(/R\$\s*100\.000,00/);
     });
 
     it('should format dates correctly', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Navigate to review step
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -435,7 +442,7 @@ describe('ContractWizard', () => {
       const paymentFrequencySelect = screen.getByLabelText('Frequência de Pagamento');
       await user.selectOptions(paymentFrequencySelect, 'monthly');
       await user.click(screen.getByText('Próximo'));
-      
+
       // Wait for step 3 to load
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Datas e Prazos' })).toBeInTheDocument();
@@ -476,7 +483,7 @@ describe('ContractWizard', () => {
 
     it('should handle rapid navigation', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Rapidly navigate through steps
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -493,7 +500,7 @@ describe('ContractWizard', () => {
   describe('Form State Management', () => {
     it('should maintain form state across steps', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill first step
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -509,7 +516,7 @@ describe('ContractWizard', () => {
 
     it('should handle form data changes', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Change form data
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -527,7 +534,7 @@ describe('ContractWizard', () => {
   describe('Error Handling', () => {
     it('should handle validation errors gracefully', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Try to submit without required data
       await user.click(screen.getByText('Próximo'));
@@ -539,8 +546,8 @@ describe('ContractWizard', () => {
     it('should handle network errors', async () => {
       const user = userEvent.setup();
       mockOnSubmit.mockRejectedValueOnce(new Error('Network error'));
-      
-      render(<ContractWizard {...defaultProps} />);
+
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Fill and submit form
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -582,7 +589,7 @@ describe('ContractWizard', () => {
       const reviewHeading = screen.getByRole('heading', { name: 'Revisão' });
       const reviewContent = reviewHeading.closest('div')?.querySelector('p');
       expect(reviewContent).toHaveTextContent('Confirme os dados antes de salvar');
-      
+
       // The submit button should be available - use the Next button which becomes "Salvar Contrato" on last step
       const submitButton = screen.getByText('Salvar Contrato');
       await user.click(submitButton);
@@ -594,7 +601,7 @@ describe('ContractWizard', () => {
   describe('Component Integration', () => {
     it('should handle all wizard steps correctly', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Step 1: Basic Info
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -638,7 +645,7 @@ describe('ContractWizard', () => {
       const reviewHeading = screen.getByRole('heading', { name: 'Revisão' });
       const reviewContent = reviewHeading.closest('div')?.querySelector('p');
       expect(reviewContent).toHaveTextContent('Confirme os dados antes de salvar');
-      
+
       // The submit button should be available - use the Next button which becomes "Salvar Contrato" on last step
       const submitButton = screen.getByText('Salvar Contrato');
       expect(submitButton).toBeInTheDocument();
@@ -646,7 +653,7 @@ describe('ContractWizard', () => {
 
     it('should handle form field interactions', async () => {
       const user = userEvent.setup();
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Test input field interactions
       const titleInput = screen.getByLabelText('Título do Contrato *');
@@ -658,7 +665,7 @@ describe('ContractWizard', () => {
     });
 
     it('should handle button states correctly', () => {
-      render(<ContractWizard {...defaultProps} />);
+      renderWithI18n(<ContractWizard {...defaultProps} />);
 
       // Previous button should not be visible on first step
       expect(screen.queryByText('Anterior')).not.toBeInTheDocument();

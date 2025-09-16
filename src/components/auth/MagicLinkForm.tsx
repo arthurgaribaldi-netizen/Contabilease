@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { useMagicLink } from '@/hooks/useMagicLink';
 import { CheckCircle, Mail } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface MagicLinkFormProps {
@@ -30,12 +31,13 @@ export default function MagicLinkForm({
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { sendMagicLink, isLoading } = useMagicLink();
+  const t = useTranslations('auth.magicLink');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !email.includes('@')) {
-      onError?.('Por favor, insira um email válido');
+      onError?.(t('invalidEmail'));
       return;
     }
 
@@ -46,10 +48,10 @@ export default function MagicLinkForm({
         setIsSubmitted(true);
         onSuccess?.();
       } else {
-        onError?.(result.error || 'Erro ao enviar link mágico');
+        onError?.(result.error || t('sendError'));
       }
     } catch (err) {
-      onError?.('Erro inesperado ao enviar link mágico');
+      onError?.(t('unexpectedError'));
     }
   };
 
@@ -60,25 +62,25 @@ export default function MagicLinkForm({
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
             <CheckCircle className="h-6 w-6 text-green-600" />
           </div>
-          <CardTitle>Link Enviado!</CardTitle>
+          <CardTitle>{t('successTitle')}</CardTitle>
           <CardDescription>
-            Verifique seu email e clique no link para fazer login
+            {t('successMessage')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                Enviamos um link de login para <strong>{email}</strong>
+                {t('emailSentTo')} <strong>{email}</strong>
               </p>
             </div>
             
             <div className="text-sm text-gray-600">
-              <p className="mb-2"><strong>Próximos passos:</strong></p>
+              <p className="mb-2"><strong>{t('nextSteps')}</strong></p>
               <ol className="list-decimal list-inside space-y-1">
-                <li>Verifique sua caixa de entrada</li>
-                <li>Clique no link enviado</li>
-                <li>Você será redirecionado automaticamente</li>
+                <li>{t('step1')}</li>
+                <li>{t('step2')}</li>
+                <li>{t('step3')}</li>
               </ol>
             </div>
 
@@ -90,7 +92,7 @@ export default function MagicLinkForm({
               }}
               className="w-full"
             >
-              Tentar outro email
+              {t('tryAnotherEmail')}
             </Button>
           </div>
         </CardContent>
@@ -104,9 +106,9 @@ export default function MagicLinkForm({
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
           <Mail className="h-6 w-6 text-blue-600" />
         </div>
-        <CardTitle>Login com Link Mágico</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Digite seu email e receberá um link para fazer login sem senha
+          {t('subtitle')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -120,7 +122,7 @@ export default function MagicLinkForm({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
+              placeholder={t('emailPlaceholder')}
               disabled={isLoading}
               required
             />
@@ -131,14 +133,13 @@ export default function MagicLinkForm({
             disabled={isLoading || !email.trim()}
             className="w-full"
           >
-            {isLoading ? 'Enviando...' : 'Enviar Link Mágico'}
+            {isLoading ? t('sending') : t('sendButton')}
           </Button>
         </form>
 
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600">
-            <strong>Como funciona:</strong> Enviamos um link seguro para seu email.
-            Clique nele e você será logado automaticamente, sem precisar de senha.
+            <strong>{t('howItWorks')}</strong> {t('howItWorksDescription')}
           </p>
         </div>
       </CardContent>

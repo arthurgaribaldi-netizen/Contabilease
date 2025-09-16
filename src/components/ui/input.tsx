@@ -4,7 +4,11 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import * as React from 'react';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'onDrag' | 'onDragStart' | 'onDragEnd'
+  > {
   label?: string;
   error?: string;
   helperText?: string;
@@ -57,7 +61,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       : {};
 
     return (
-      <div className="space-y-2">
+      <div className='space-y-2'>
         {label && (
           <motion.label
             className={cn(
@@ -73,14 +77,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </motion.label>
         )}
-        
-        <div className="relative">
+
+        <div className='relative'>
           {icon && iconPosition === 'left' && (
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <div className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'>
               {icon}
             </div>
           )}
-          
+
           <Comp
             type={type}
             className={cn(
@@ -95,11 +99,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onBlur={handleBlur}
             onChange={handleChange}
             {...motionProps}
-            {...props}
+            {...(() => {
+              // Separate HTML props from motion props to avoid conflicts
+              const { onDrag, onDragStart, onDragEnd, ...htmlProps } = props as any;
+              return htmlProps;
+            })()}
           />
-          
+
           {icon && iconPosition === 'right' && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <div className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400'>
               {icon}
             </div>
           )}
@@ -107,7 +115,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {/* Focus indicator */}
           {animated && isFocused && (
             <motion.div
-              className="absolute inset-0 rounded-md border-2 border-blue-500 pointer-events-none"
+              className='absolute inset-0 rounded-md border-2 border-blue-500 pointer-events-none'
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -123,13 +131,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="flex items-center gap-1 text-sm text-red-600"
+            className='flex items-center gap-1 text-sm text-red-600'
           >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
               <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
+                fillRule='evenodd'
+                d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
+                clipRule='evenodd'
               />
             </svg>
             {error}
@@ -142,7 +150,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className="text-sm text-gray-500"
+            className='text-sm text-gray-500'
           >
             {helperText}
           </motion.p>

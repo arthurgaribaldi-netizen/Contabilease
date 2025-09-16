@@ -36,9 +36,9 @@ BEGIN
     FOR validation_results IN 
         SELECT 
             'table' as object_type,
-            table_name as object_name,
+            t.table_name as object_name,
             CASE 
-                WHEN EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = table_name AND table_schema = 'public') 
+                WHEN EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = t.table_name AND table_schema = 'public') 
                 THEN 'EXISTS' 
                 ELSE 'MISSING' 
             END as status

@@ -2,19 +2,20 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import {
   IFRS16SensitivityEngine,
   SensitivityAnalysis,
 } from '@/lib/calculations/ifrs16-sensitivity';
+import { logger } from '@/lib/logger';
 import { IFRS16CompleteData } from '@/lib/schemas/ifrs16-complete';
+import { useEffect, useState } from 'react';
 
 interface IFRS16SensitivityProps {
   contractData: IFRS16CompleteData;
@@ -39,7 +40,14 @@ export default function IFRS16Sensitivity({
         const analysis = engine.performSensitivityAnalysis();
         setSensitivityAnalysis(analysis);
       } catch (error) {
-        console.error('Error analyzing sensitivity:', error);
+        logger.error(
+          'Error analyzing sensitivity:',
+          {
+            component: 'ifrs16sensitivity',
+            operation: 'analyzeSensitivity',
+          },
+          error as Error
+        );
       } finally {
         setLoading(false);
       }

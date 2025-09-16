@@ -2,10 +2,12 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary security and obfuscation utilities.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
+
+import { logger } from '../logger';
 
 /**
  * Code obfuscation utilities for production builds
@@ -17,7 +19,7 @@ export function obfuscateString(str: string): string {
   if (process.env.NODE_ENV === 'development') {
     return str; // Don't obfuscate in development
   }
-  
+
   return btoa(str).split('').reverse().join('');
 }
 
@@ -25,7 +27,7 @@ export function deobfuscateString(obfuscated: string): string {
   if (process.env.NODE_ENV === 'development') {
     return obfuscated; // Don't deobfuscate in development
   }
-  
+
   return atob(obfuscated.split('').reverse().join(''));
 }
 
@@ -36,12 +38,12 @@ export function obfuscateFunctionName(originalName: string): string {
   if (process.env.NODE_ENV === 'development') {
     return originalName;
   }
-  
+
   if (!OBFUSCATED_FUNCTIONS.has(originalName)) {
     const obfuscated = `_${Math.random().toString(36).substr(2, 9)}`;
     OBFUSCATED_FUNCTIONS.set(originalName, obfuscated);
   }
-  
+
   return OBFUSCATED_FUNCTIONS.get(originalName) || originalName;
 }
 
@@ -53,61 +55,70 @@ export function protectCalculationFunction<T extends (...args: any[]) => any>(
   if (process.env.NODE_ENV === 'development') {
     return fn;
   }
-  
+
   // Add anti-debugging measures
   const protectedFn = ((...args: Parameters<T>) => {
     // Check for dev tools
     const start = Date.now();
-    debugger; // This will be removed in production by minifiers
-    
+    // Debugger removed for production
+
     const result = fn(...args);
-    
+
     // Detect debugging attempts
     const end = Date.now();
-    if (end - start > 1000) { // Suspiciously long execution
-      console.warn('Debugging detected');
+    if (end - start > 1000) {
+      // Suspiciously long execution
+      logger.warn('Debugging detected', {
+        component: 'security-obfuscation',
+        operation: 'obfuscateFunction',
+        executionTime: end - start,
+      });
     }
-    
+
     return result;
   }) as T;
-  
+
   // Obfuscate function name
   Object.defineProperty(protectedFn, 'name', {
     value: obfuscateFunctionName(functionName),
-    writable: false
+    writable: false,
   });
-  
+
   return protectedFn;
 }
 
 // Environment variable obfuscation
 export function getSecureEnvVar(key: string): string | undefined {
   const value = process.env[key];
-  
+
   if (!value) return undefined;
-  
+
   // Additional security checks
   if (value.includes('localhost') || value.includes('127.0.0.1')) {
-    console.warn('Development environment detected in production');
+    logger.warn('Development environment detected in production', {
+      component: 'security-obfuscation',
+      operation: 'getSecureEnv',
+      envKey: key,
+    });
   }
-  
+
   return value;
 }
 
 // Anti-tampering measures
 export function addTamperProtection(obj: any, criticalMethods: string[]): void {
   if (process.env.NODE_ENV === 'development') return;
-  
+
   for (const method of criticalMethods) {
     if (typeof obj[method] === 'function') {
       const originalMethod = obj[method];
-      
-      obj[method] = function(...args: any[]) {
+
+      obj[method] = function (...args: any[]) {
         // Check if method has been tampered with
         if (obj[method] !== originalMethod) {
           throw new Error('Tampering detected');
         }
-        
+
         return originalMethod.apply(this, args);
       };
     }
@@ -117,15 +128,15 @@ export function addTamperProtection(obj: any, criticalMethods: string[]): void {
 // Source code protection
 export function addSourceProtection(): void {
   if (process.env.NODE_ENV === 'development') return;
-  
+
   // Disable right-click context menu
   if (typeof window !== 'undefined') {
-    document.addEventListener('contextmenu', (e) => {
+    document.addEventListener('contextmenu', e => {
       e.preventDefault();
     });
-    
+
     // Disable F12, Ctrl+Shift+I, Ctrl+U
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (
         e.key === 'F12' ||
         (e.ctrlKey && e.shiftKey && e.key === 'I') ||
@@ -140,7 +151,7 @@ export function addSourceProtection(): void {
 // Watermark for screenshots
 export function addWatermark(): void {
   if (process.env.NODE_ENV === 'development') return;
-  
+
   if (typeof window !== 'undefined') {
     const watermark = document.createElement('div');
     watermark.innerHTML = '© 2025 Contabilease - Propriedade Intelectual Protegida';

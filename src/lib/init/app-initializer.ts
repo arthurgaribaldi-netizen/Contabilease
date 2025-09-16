@@ -103,7 +103,6 @@ class AppInitializer {
 
       this.initialized = true;
       logger.info('Contabilease application initialized successfully');
-
     } catch (error) {
       logger.error('Failed to initialize application', { error });
       throw error;
@@ -191,7 +190,7 @@ class AppInitializer {
 
     if (typeof window !== 'undefined') {
       // Error handler para JavaScript
-      window.addEventListener('error', (event) => {
+      window.addEventListener('error', event => {
         logger.error('Global JavaScript error', {
           message: event.message,
           filename: event.filename,
@@ -202,7 +201,7 @@ class AppInitializer {
       });
 
       // Error handler para promises rejeitadas
-      window.addEventListener('unhandledrejection', (event) => {
+      window.addEventListener('unhandledrejection', event => {
         logger.error('Unhandled promise rejection', {
           reason: event.reason,
           promise: event.promise,
@@ -223,10 +222,10 @@ class AppInitializer {
       // Cleanup antes de descarregar a página
       window.addEventListener('beforeunload', () => {
         logger.info('Application cleanup started');
-        
+
         // Flush telemetry
         telemetryManager.destroy();
-        
+
         // Clear caches se necessário
         if (!this.config.cache.persist) {
           contractCache.clear();
@@ -234,7 +233,7 @@ class AppInitializer {
           calculationCache.clear();
           apiCache.clear();
         }
-        
+
         logger.info('Application cleanup completed');
       });
     }
@@ -307,7 +306,7 @@ export async function initializeApp(config?: Partial<AppInitConfig>): Promise<vo
   if (config) {
     appInitializer.updateConfig(config);
   }
-  
+
   return appInitializer.initialize();
 }
 
@@ -347,7 +346,9 @@ export function useAppInitialization(config?: Partial<AppInitConfig>) {
 
   React.useEffect(() => {
     if (!status.initialized) {
-      initialize();
+      initialize().catch(error => {
+        logger.error('Error initializing app:', error);
+      });
     }
 
     return () => {
@@ -386,7 +387,7 @@ export const appConfigs = {
       bundleAnalysis: true,
     },
   },
-  
+
   production: {
     performance: {
       enabled: true,
@@ -407,7 +408,7 @@ export const appConfigs = {
       bundleAnalysis: false,
     },
   },
-  
+
   testing: {
     performance: {
       enabled: false,

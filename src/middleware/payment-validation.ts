@@ -2,11 +2,12 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
+import { logger } from '@/lib/logger';
 import { SUBSCRIPTION_PLANS } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
@@ -28,7 +29,7 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
       .eq('status', 'active')
       .single();
 
-    if (error || !data) {
+    if (error ?? !data) {
       return null;
     }
 
@@ -38,7 +39,11 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
       currentPeriodEnd: data.current_period_end,
     };
   } catch (error) {
-    console.error('Error fetching user subscription:', error);
+    await logger.error(
+      'Error fetching user subscription',
+      { component: 'payment', operation: 'getUserSubscription', userId },
+      error as Error
+    );
     return null;
   }
 }
@@ -49,7 +54,7 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
 export async function canCreateContract(userId: string): Promise<boolean> {
   try {
     const subscription = await getUserSubscription(userId);
-    
+
     if (!subscription) {
       // User has no active subscription, check if they can use free plan
       const { data: contracts, error } = await supabase
@@ -58,7 +63,11 @@ export async function canCreateContract(userId: string): Promise<boolean> {
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Error checking contracts:', error);
+        await logger.error(
+          'Error checking contracts',
+          { component: 'payment', operation: 'canCreateContract', userId },
+          error as Error
+        );
         return false;
       }
 
@@ -66,7 +75,7 @@ export async function canCreateContract(userId: string): Promise<boolean> {
     }
 
     const plan = SUBSCRIPTION_PLANS[subscription.plan];
-    
+
     // Check current contract count
     const { data: contracts, error } = await supabase
       .from('contracts')
@@ -74,13 +83,21 @@ export async function canCreateContract(userId: string): Promise<boolean> {
       .eq('user_id', userId);
 
     if (error) {
-      console.error('Error checking contracts:', error);
+      await logger.error(
+        'Error checking contracts',
+        { component: 'payment', operation: 'canCreateContract', userId },
+        error as Error
+      );
       return false;
     }
 
     return contracts.length < plan.maxContracts;
   } catch (error) {
-    console.error('Error checking contract creation permission:', error);
+    await logger.error(
+      'Error checking contract creation permission',
+      { component: 'payment', operation: 'canCreateContract', userId },
+      error as Error
+    );
     return false;
   }
 }
@@ -90,7 +107,7 @@ export async function canCreateContract(userId: string): Promise<boolean> {
  */
 export async function requirePaidSubscription(userId: string): Promise<boolean> {
   const subscription = await getUserSubscription(userId);
-  
+
   if (!subscription) {
     return false;
   }
@@ -110,7 +127,7 @@ export async function validateUserPayment(userId: string): Promise<{
   try {
     const subscription = await getUserSubscription(userId);
     const canCreate = await canCreateContract(userId);
-    
+
     if (!subscription) {
       return {
         isValid: false,
@@ -129,7 +146,11 @@ export async function validateUserPayment(userId: string): Promise<{
       requiresUpgrade,
     };
   } catch (error) {
-    console.error('Error validating user payment:', error);
+    await logger.error(
+      'Error validating user payment',
+      { component: 'payment', operation: 'validateUserPayment', userId },
+      error as Error
+    );
     return {
       isValid: false,
       canCreateContract: false,

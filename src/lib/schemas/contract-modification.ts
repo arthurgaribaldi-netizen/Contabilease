@@ -2,12 +2,19 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 import { z } from 'zod';
+
+// Constants for contract modification limits
+const CONTRACT_MODIFICATION_LIMITS = {
+  MAX_DESCRIPTION_LENGTH: 500,
+  MIN_PAYMENT_CHANGE_PERCENT: -100,
+  MAX_PAYMENT_CHANGE_PERCENT: 100,
+} as const;
 
 // Schema for contract modifications
 export const contractModificationSchema = z.object({
@@ -24,7 +31,10 @@ export const contractModificationSchema = z.object({
     'renewal', // Renovação
     'other', // Outras modificações
   ]),
-  description: z.string().min(1, 'Descrição da modificação é obrigatória').max(500),
+  description: z
+    .string()
+    .min(1, 'Descrição da modificação é obrigatória')
+    .max(CONTRACT_MODIFICATION_LIMITS.MAX_DESCRIPTION_LENGTH),
 
   // Modification details
   effective_date: z.string().min(1, 'Data de vigência é obrigatória'),
@@ -36,7 +46,11 @@ export const contractModificationSchema = z.object({
   // Payment modifications
   new_monthly_payment: z.number().min(0).optional(),
   payment_change_amount: z.number().optional(), // Positive for increase, negative for decrease
-  payment_change_percentage: z.number().min(-100).max(100).optional(), // Percentage change
+  payment_change_percentage: z
+    .number()
+    .min(CONTRACT_MODIFICATION_LIMITS.MIN_PAYMENT_CHANGE_PERCENT)
+    .max(CONTRACT_MODIFICATION_LIMITS.MAX_PAYMENT_CHANGE_PERCENT)
+    .optional(), // Percentage change
 
   // Rate modifications
   new_discount_rate_annual: z.number().min(0).max(100).optional(),

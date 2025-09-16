@@ -9,6 +9,7 @@
 
 import { activateModification, approveModification } from '@/lib/contracts';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 // PUT /api/contracts/[id]/modifications/[modificationId] - Aprovar ou ativar modificação
 export async function PUT(
@@ -45,7 +46,10 @@ export async function PUT(
       message: `Modification ${action}d successfully`,
     });
   } catch (error) {
-    console.error('Error updating modification:', error);
+    logger.error('Error updating modification:', {
+      component: 'route',
+      operation: 'operation'
+    }, error as Error);
 
     if (error instanceof Error) {
       if (error.message.includes('not found')) {

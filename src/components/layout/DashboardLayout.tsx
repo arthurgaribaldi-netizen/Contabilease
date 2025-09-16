@@ -3,9 +3,10 @@
 import { useAuth } from '@/components/auth/AuthProvider';
 import AccessibilitySettings from '@/components/ui/AccessibilitySettings';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
+import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { ToastContainer, useToast } from '@/components/ui/Toast';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
   AdjustmentsHorizontalIcon,
@@ -128,7 +129,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     try {
       await signOut();
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      logger.error(
+        'Erro ao fazer logout',
+        {
+          component: 'dashboard-layout',
+          operation: 'handleSignOut',
+        },
+        error as Error
+      );
     }
   };
 

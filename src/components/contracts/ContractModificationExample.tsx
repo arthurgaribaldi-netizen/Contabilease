@@ -2,20 +2,21 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 'use client';
 
-import { useState } from 'react';
 import { IFRS16ModificationEngine } from '@/lib/calculations/ifrs16-modification-engine';
-import { IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
+import { logger } from '@/lib/logger';
 import {
   ContractModificationFormData,
   ModificationCalculationResult,
 } from '@/lib/schemas/contract-modification';
+import { IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
+import { useState } from 'react';
 
 export default function ContractModificationExample() {
   const [modifications, setModifications] = useState<ContractModificationFormData[]>([]);
@@ -88,7 +89,14 @@ export default function ContractModificationExample() {
       const impact = engine.calculateModificationImpact(modification);
       setSelectedModification(impact);
     } catch (error) {
-      console.error('Error adding modification:', error);
+      logger.error(
+        'Error adding modification:',
+        {
+          component: 'contractmodificationexample',
+          operation: 'addModification',
+        },
+        error as Error
+      );
     } finally {
       setIsCalculating(false);
     }

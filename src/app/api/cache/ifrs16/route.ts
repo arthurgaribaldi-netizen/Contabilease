@@ -10,6 +10,7 @@
 import { ifrs16Cache } from '@/lib/cache/ifrs16-cache';
 import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 /**
  * API para gerenciamento do cache de cálculos IFRS 16
@@ -36,7 +37,10 @@ export async function GET(_request: NextRequest) {
       expired_entries: cacheInfo.filter(entry => !entry.isValid).length,
     });
   } catch (error) {
-    console.error('Error fetching cache stats:', error);
+    logger.error('Error fetching cache stats:', {
+      component: 'route',
+      operation: 'operation'
+    }, error as Error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -71,7 +75,10 @@ export async function DELETE(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error('Error clearing cache:', error);
+    logger.error('Error clearing cache:', {
+      component: 'route',
+      operation: 'operation'
+    }, error as Error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -102,7 +109,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
-    console.error('Error performing cache action:', error);
+    logger.error('Error performing cache action:', {
+      component: 'route',
+      operation: 'operation'
+    }, error as Error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

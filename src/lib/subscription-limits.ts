@@ -27,7 +27,8 @@ export async function getUserSubscriptionLimits(userId: string): Promise<Subscri
     // Get user's current subscription
     const { data: subscription, error: subError } = await supabase
       .from('user_subscriptions')
-      .select(`
+      .select(
+        `
         subscription_plans!inner (
           name,
           max_contracts,
@@ -35,7 +36,8 @@ export async function getUserSubscriptionLimits(userId: string): Promise<Subscri
           features
         ),
         status
-      `)
+      `
+      )
       .eq('user_id', userId)
       .eq('status', 'active')
       .single();
@@ -76,7 +78,7 @@ export async function getUserSubscriptionLimits(userId: string): Promise<Subscri
       .eq('user_id', userId)
       .single();
 
-    const plan = subscription.subscription_plans;
+    const plan = subscription.subscription_plans as any;
     const currentContracts = usage?.contracts_count || 0;
     const currentUsers = usage?.users_count || 1;
 
@@ -90,7 +92,7 @@ export async function getUserSubscriptionLimits(userId: string): Promise<Subscri
       canAddUser: currentUsers < plan.max_users,
     };
   } catch (error) {
-    logger.error('Error getting subscription limits:', error);
+    logger.error('Error getting subscription limits:', { error: String(error) });
     throw error;
   }
 }
@@ -102,12 +104,14 @@ export async function getUserSubscriptionFeatures(userId: string): Promise<Subsc
   try {
     const { data: subscription, error } = await supabase
       .from('user_subscriptions')
-      .select(`
+      .select(
+        `
         subscription_plans!inner (
           features
         ),
         status
-      `)
+      `
+      )
       .eq('user_id', userId)
       .eq('status', 'active')
       .single();
@@ -123,8 +127,8 @@ export async function getUserSubscriptionFeatures(userId: string): Promise<Subsc
       };
     }
 
-    const features = subscription.subscription_plans.features || {};
-    
+    const features = (subscription.subscription_plans as any).features || {};
+
     return {
       exportExcel: features.export_excel || false,
       apiAccess: features.api_access || false,
@@ -133,7 +137,7 @@ export async function getUserSubscriptionFeatures(userId: string): Promise<Subsc
       prioritySupport: features.priority_support || false,
     };
   } catch (error) {
-    logger.error('Error getting subscription features:', error);
+    logger.error('Error getting subscription features:', { error: String(error) });
     return {
       exportExcel: false,
       apiAccess: false,
@@ -149,7 +153,13 @@ export async function getUserSubscriptionFeatures(userId: string): Promise<Subsc
  */
 export async function canUserPerformAction(
   userId: string,
-  action: 'create_contract' | 'add_user' | 'export_excel' | 'api_access' | 'custom_reports' | 'white_label'
+  action:
+    | 'create_contract'
+    | 'add_user'
+    | 'export_excel'
+    | 'api_access'
+    | 'custom_reports'
+    | 'white_label'
 ): Promise<boolean> {
   try {
     const limits = await getUserSubscriptionLimits(userId);
@@ -172,7 +182,7 @@ export async function canUserPerformAction(
         return false;
     }
   } catch (error) {
-    logger.error('Error checking user permissions:', error);
+    logger.error('Error checking user permissions:', { error: String(error) });
     return false;
   }
 }
@@ -187,9 +197,9 @@ export async function updateSubscriptionUsage(userId: string): Promise<void> {
     });
 
     if (error) {
-      logger.error('Error updating subscription usage:', error);
+      logger.error('Error updating subscription usage:', { error: String(error) });
     }
   } catch (error) {
-    logger.error('Error updating subscription usage:', error);
+    logger.error('Error updating subscription usage:', { error: String(error) });
   }
 }

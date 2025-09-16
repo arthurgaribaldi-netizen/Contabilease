@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { RATE_LIMITS, SECURITY_FUNCTIONS } from '@/lib/supabase/security';
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextRequest, NextResponse } from 'next/server';
@@ -88,14 +89,8 @@ export async function supabaseSecurityMiddleware(
       response.headers.set('Access-Control-Allow-Origin', origin);
     }
 
-    response.headers.set(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, OPTIONS'
-    );
-    response.headers.set(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization'
-    );
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
     // Handle preflight requests
     if (request.method === 'OPTIONS') {
@@ -106,9 +101,9 @@ export async function supabaseSecurityMiddleware(
     if (pathname.includes('/auth/')) {
       const isLoginAttempt = pathname.includes('/login') || pathname.includes('/signin');
       const isPasswordReset = pathname.includes('/reset-password');
-      
+
       let rateLimitConfig: RateLimitConfig;
-      
+
       if (isLoginAttempt) {
         rateLimitConfig = RATE_LIMITS.AUTH_ATTEMPTS;
       } else if (isPasswordReset) {
@@ -196,14 +191,7 @@ export async function supabaseSecurityMiddleware(
 
     // Log suspicious activity
     const userAgent = request.headers.get('user-agent');
-    const suspiciousPatterns = [
-      /bot/i,
-      /crawler/i,
-      /scraper/i,
-      /sqlmap/i,
-      /nikto/i,
-      /nmap/i,
-    ];
+    const suspiciousPatterns = [/bot/i, /crawler/i, /scraper/i, /sqlmap/i, /nikto/i, /nmap/i];
 
     if (userAgent && suspiciousPatterns.some(pattern => pattern.test(userAgent))) {
       SECURITY_FUNCTIONS.logSecurityEvent({
@@ -217,8 +205,18 @@ export async function supabaseSecurityMiddleware(
 
     return response;
   } catch (error) {
-    console.error('Security middleware error:', error);
-    
+    await logger.error(
+      'Security middleware error',
+      {
+        component: 'middleware',
+        operation: 'supabaseSecurity',
+        pathname,
+        ip: request.ip || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+      },
+      error as Error
+    );
+
     // Log the error but don't block the request
     SECURITY_FUNCTIONS.logSecurityEvent({
       eventType: 'middleware_error',
@@ -233,11 +231,14 @@ export async function supabaseSecurityMiddleware(
 }
 
 // Clean up rate limit store periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of rateLimitStore.entries()) {
-    if (now > value.resetTime) {
-      rateLimitStore.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, value] of rateLimitStore.entries()) {
+      if (now > value.resetTime) {
+        rateLimitStore.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000); // Clean up every 5 minutes
+  },
+  5 * 60 * 1000
+); // Clean up every 5 minutes

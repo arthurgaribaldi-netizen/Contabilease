@@ -1,6 +1,6 @@
 /**
  * Sistema de Métricas de Negócio - Micro SaaS 2025
- * 
+ *
  * Implementa as métricas essenciais para micro SaaS:
  * - MRR (Monthly Recurring Revenue)
  * - CAC (Customer Acquisition Cost)
@@ -10,38 +10,41 @@
  * - Product-Market Fit Score
  */
 
+import { BUSINESS_METRICS_CONSTANTS } from '@/lib/constants/validation-limits';
+import { useEffect, useState } from 'react';
+
 export interface BusinessMetrics {
   // Métricas de Receita
   mrr: number;
   arr: number;
   revenueGrowth: number;
-  
+
   // Métricas de Clientes
   totalCustomers: number;
   activeCustomers: number;
   newCustomers: number;
   churnedCustomers: number;
-  
+
   // Métricas de Conversão
   trialToPaidConversion: number;
   freeToPaidConversion: number;
   upgradeRate: number;
-  
+
   // Métricas de Aquisição
   cac: number;
   cacPaybackPeriod: number;
   ltvcacRatio: number;
-  
+
   // Métricas de Retenção
   monthlyChurnRate: number;
   annualChurnRate: number;
   customerLifetimeValue: number;
-  
+
   // Métricas de Produto
   productMarketFitScore: number;
   netPromoterScore: number;
   customerSatisfactionScore: number;
-  
+
   // Métricas de Engajamento
   dailyActiveUsers: number;
   monthlyActiveUsers: number;
@@ -54,7 +57,7 @@ export interface ConversionFunnel {
   signups: number;
   trials: number;
   paidCustomers: number;
-  
+
   // Taxas de conversão
   visitorToSignup: number;
   signupToTrial: number;
@@ -76,10 +79,12 @@ export class BusinessMetricsCalculator {
   /**
    * Calcula MRR (Monthly Recurring Revenue)
    */
-  static calculateMRR(subscriptions: Array<{
-    monthlyPrice: number;
-    status: 'active' | 'cancelled' | 'paused';
-  }>): number {
+  static calculateMRR(
+    subscriptions: Array<{
+      monthlyPrice: number;
+      status: 'active' | 'cancelled' | 'paused';
+    }>
+  ): number {
     return subscriptions
       .filter(sub => sub.status === 'active')
       .reduce((total, sub) => total + sub.monthlyPrice, 0);
@@ -89,7 +94,7 @@ export class BusinessMetricsCalculator {
    * Calcula ARR (Annual Recurring Revenue)
    */
   static calculateARR(mrr: number): number {
-    return mrr * 12;
+    return mrr * BUSINESS_METRICS_CONSTANTS.MONTHS_PER_YEAR;
   }
 
   /**
@@ -119,10 +124,7 @@ export class BusinessMetricsCalculator {
   /**
    * Calcula Taxa de Churn
    */
-  static calculateChurnRate(
-    customersAtStart: number,
-    customersLost: number
-  ): number {
+  static calculateChurnRate(customersAtStart: number, customersLost: number): number {
     if (customersAtStart === 0) return 0;
     return customersLost / customersAtStart;
   }
@@ -142,19 +144,17 @@ export class BusinessMetricsCalculator {
     if (totalResponses === 0) return 0;
 
     const disappointedCount = surveyResponses.filter(r => r.wouldBeDisappointed).length;
-    return (disappointedCount / totalResponses) * 100;
+    return (disappointedCount / totalResponses) * BUSINESS_METRICS_CONSTANTS.PERCENTAGE_MULTIPLIER;
   }
 
   /**
    * Calcula Net Promoter Score (NPS)
    */
-  static calculateNPS(
-    promoters: number,
-    detractors: number,
-    totalResponses: number
-  ): number {
+  static calculateNPS(promoters: number, detractors: number, totalResponses: number): number {
     if (totalResponses === 0) return 0;
-    return ((promoters - detractors) / totalResponses) * 100;
+    return (
+      ((promoters - detractors) / totalResponses) * BUSINESS_METRICS_CONSTANTS.PERCENTAGE_MULTIPLIER
+    );
   }
 
   /**
@@ -171,10 +171,18 @@ export class BusinessMetricsCalculator {
       signups,
       trials,
       paidCustomers,
-      visitorToSignup: visitors > 0 ? (signups / visitors) * 100 : 0,
-      signupToTrial: signups > 0 ? (trials / signups) * 100 : 0,
-      trialToPaid: trials > 0 ? (paidCustomers / trials) * 100 : 0,
-      overallConversion: visitors > 0 ? (paidCustomers / visitors) * 100 : 0,
+      visitorToSignup:
+        visitors > 0 ? (signups / visitors) * BUSINESS_METRICS_CONSTANTS.PERCENTAGE_MULTIPLIER : 0,
+      signupToTrial:
+        signups > 0 ? (trials / signups) * BUSINESS_METRICS_CONSTANTS.PERCENTAGE_MULTIPLIER : 0,
+      trialToPaid:
+        trials > 0
+          ? (paidCustomers / trials) * BUSINESS_METRICS_CONSTANTS.PERCENTAGE_MULTIPLIER
+          : 0,
+      overallConversion:
+        visitors > 0
+          ? (paidCustomers / visitors) * BUSINESS_METRICS_CONSTANTS.PERCENTAGE_MULTIPLIER
+          : 0,
     };
   }
 
@@ -195,7 +203,7 @@ export class BusinessMetricsCalculator {
     return cohorts.map(cohort => {
       const initialCustomers = cohort.customers.length;
       const now = new Date();
-      
+
       const month1 = cohort.customers.filter(c => {
         const month1Date = new Date(c.signupDate);
         month1Date.setMonth(month1Date.getMonth() + 1);
@@ -304,7 +312,7 @@ export class BusinessMetricsCalculator {
     let status: 'excellent' | 'good' | 'warning' | 'critical';
     if (score >= 90) status = 'excellent';
     else if (score >= 70) status = 'good';
-    else if (score >= 50) status = 'warning';
+    else if (score >= BUSINESS_METRICS_CONSTANTS.SCORE_GOOD) status = 'warning';
     else status = 'critical';
 
     return { score, status, recommendations };
@@ -325,7 +333,7 @@ export function useBusinessMetrics() {
         setLoading(true);
         // Simular API call - substituir por chamada real
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Dados simulados para demonstração
         const mockMetrics: BusinessMetrics = {
           mrr: 4850,

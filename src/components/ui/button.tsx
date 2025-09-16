@@ -31,7 +31,10 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends Omit<
+      React.ButtonHTMLAttributes<HTMLButtonElement>,
+      'onDrag' | 'onDragStart' | 'onDragEnd'
+    >,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean;
@@ -58,19 +61,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const motionProps =
       animated && !asChild
         ? {
-            whileHover: { 
+            whileHover: {
               scale: 1.02,
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              transition: { duration: 0.2 }
+              transition: { duration: 0.2 },
             },
-            whileTap: { 
+            whileTap: {
               scale: 0.98,
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              transition: { duration: 0.1 }
+              transition: { duration: 0.1 },
             },
             transition: { type: 'spring', stiffness: 400, damping: 17 },
           }
         : {};
+
+    // Separate HTML props from motion props to avoid conflicts
+    const { onDrag, onDragStart, onDragEnd, ...htmlProps } = props as any;
 
     return (
       <Comp
@@ -78,7 +84,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         {...motionProps}
-        {...props}
+        {...htmlProps}
       >
         {loading && (
           <motion.div
@@ -96,4 +102,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 export { Button, buttonVariants };
-

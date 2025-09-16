@@ -2,11 +2,12 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
+import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface PerformanceMetric {
@@ -48,13 +49,19 @@ export async function POST(request: NextRequest) {
     }));
 
     // Log das métricas (em produção, enviar para serviço de monitoramento)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Performance API] Received metrics:', {
+    await logger.info(
+      'Performance metrics received',
+      {
+        component: 'performance-api',
+        operation: 'POST',
         sessionId: payload.sessionId,
         metricCount: processedMetrics.length,
+      },
+      undefined,
+      {
         metrics: processedMetrics,
-      });
-    }
+      }
+    );
 
     // Em produção, aqui você integraria com serviços como:
     // - Google Analytics 4
@@ -82,7 +89,14 @@ export async function POST(request: NextRequest) {
       processed: processedMetrics.length,
     });
   } catch (error) {
-    console.error('[Performance API] Error processing metrics:', error);
+    await logger.error(
+      'Error processing performance metrics',
+      {
+        component: 'performance-api',
+        operation: 'POST',
+      },
+      error as Error
+    );
 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -107,13 +121,19 @@ async function sendToGoogleAnalytics(_metrics: PerformanceMetric[], _sessionId: 
     //     },
     //   })),
     // };
-
     // await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${process.env['GOOGLE_ANALYTICS_ID']}&api_secret=${process.env['GOOGLE_ANALYTICS_SECRET']}`, {
     //   method: 'POST',
     //   body: JSON.stringify(ga4Payload)
     // });
   } catch (error) {
-    console.error('[Performance API] Error sending to GA4:', error);
+    await logger.error(
+      'Error sending metrics to GA4',
+      {
+        component: 'performance-api',
+        operation: 'sendToGoogleAnalytics',
+      },
+      error as Error
+    );
   }
 }
 
@@ -144,7 +164,14 @@ async function sendToWebhook(metrics: PerformanceMetric[], sessionId: string) {
       body: JSON.stringify(webhookPayload),
     });
   } catch (error) {
-    console.error('[Performance API] Error sending to webhook:', error);
+    await logger.error(
+      'Error sending metrics to webhook',
+      {
+        component: 'performance-api',
+        operation: 'sendToWebhook',
+      },
+      error as Error
+    );
   }
 }
 
@@ -175,11 +202,26 @@ async function storeCriticalMetrics(metrics: PerformanceMetric[]) {
     //   })));
 
     // Log para desenvolvimento
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Performance API] Storing critical metrics:', criticalMetrics);
-    }
+    await logger.debug(
+      'Storing critical performance metrics',
+      {
+        component: 'performance-api',
+        operation: 'storeCriticalMetrics',
+      },
+      undefined,
+      {
+        criticalMetrics,
+      }
+    );
   } catch (error) {
-    console.error('[Performance API] Error storing metrics:', error);
+    await logger.error(
+      'Error storing performance metrics',
+      {
+        component: 'performance-api',
+        operation: 'storeCriticalMetrics',
+      },
+      error as Error
+    );
   }
 }
 
@@ -212,7 +254,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(stats);
   } catch (error) {
-    console.error('[Performance API] Error getting stats:', error);
+    await logger.error(
+      'Error getting performance stats',
+      {
+        component: 'performance-api',
+        operation: 'GET',
+      },
+      error as Error
+    );
 
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

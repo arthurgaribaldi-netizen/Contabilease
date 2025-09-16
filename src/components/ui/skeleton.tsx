@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import * as React from 'react';
 
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
+interface SkeletonProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   animated?: boolean;
   variant?: 'default' | 'circular' | 'rectangular';
 }
@@ -31,19 +32,15 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(
           transition: {
             duration: 1.5,
             repeat: Infinity,
-            ease: 'easeInOut',
+            ease: 'easeInOut' as const,
           },
         }
       : {};
 
-    return (
-      <Comp
-        ref={ref}
-        className={baseClasses}
-        {...motionProps}
-        {...props}
-      />
-    );
+    // Separate HTML props from motion props to avoid conflicts
+    const { onDrag, onDragStart, onDragEnd, ...htmlProps } = props as any;
+
+    return <Comp ref={ref} className={baseClasses} {...motionProps} {...htmlProps} />;
   }
 );
 Skeleton.displayName = 'Skeleton';
@@ -51,23 +48,19 @@ Skeleton.displayName = 'Skeleton';
 // Predefined skeleton components for common use cases
 const SkeletonCard = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('rounded-lg border bg-card p-6 space-y-4', className)}
-      {...props}
-    >
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-3 w-1/2" />
+    <div ref={ref} className={cn('rounded-lg border bg-card p-6 space-y-4', className)} {...props}>
+      <div className='space-y-2'>
+        <Skeleton className='h-4 w-3/4' />
+        <Skeleton className='h-3 w-1/2' />
       </div>
-      <div className="space-y-2">
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-5/6" />
-        <Skeleton className="h-3 w-4/6" />
+      <div className='space-y-2'>
+        <Skeleton className='h-3 w-full' />
+        <Skeleton className='h-3 w-5/6' />
+        <Skeleton className='h-3 w-4/6' />
       </div>
-      <div className="flex space-x-2">
-        <Skeleton className="h-8 w-20" />
-        <Skeleton className="h-8 w-16" />
+      <div className='flex space-x-2'>
+        <Skeleton className='h-8 w-20' />
+        <Skeleton className='h-8 w-16' />
       </div>
     </div>
   )
@@ -76,25 +69,21 @@ SkeletonCard.displayName = 'SkeletonCard';
 
 const SkeletonTable = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('space-y-3', className)}
-      {...props}
-    >
+    <div ref={ref} className={cn('space-y-3', className)} {...props}>
       {/* Header */}
-      <div className="flex space-x-4">
-        <Skeleton className="h-4 w-1/4" />
-        <Skeleton className="h-4 w-1/4" />
-        <Skeleton className="h-4 w-1/4" />
-        <Skeleton className="h-4 w-1/4" />
+      <div className='flex space-x-4'>
+        <Skeleton className='h-4 w-1/4' />
+        <Skeleton className='h-4 w-1/4' />
+        <Skeleton className='h-4 w-1/4' />
+        <Skeleton className='h-4 w-1/4' />
       </div>
       {/* Rows */}
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex space-x-4">
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-4 w-1/4" />
+        <div key={i} className='flex space-x-4'>
+          <Skeleton className='h-4 w-1/4' />
+          <Skeleton className='h-4 w-1/4' />
+          <Skeleton className='h-4 w-1/4' />
+          <Skeleton className='h-4 w-1/4' />
         </div>
       ))}
     </div>
@@ -104,20 +93,16 @@ SkeletonTable.displayName = 'SkeletonTable';
 
 const SkeletonForm = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('space-y-6', className)}
-      {...props}
-    >
+    <div ref={ref} className={cn('space-y-6', className)} {...props}>
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="space-y-2">
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-10 w-full" />
+        <div key={i} className='space-y-2'>
+          <Skeleton className='h-4 w-1/4' />
+          <Skeleton className='h-10 w-full' />
         </div>
       ))}
-      <div className="flex space-x-2">
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-20" />
+      <div className='flex space-x-2'>
+        <Skeleton className='h-10 w-24' />
+        <Skeleton className='h-10 w-20' />
       </div>
     </div>
   )
@@ -126,25 +111,17 @@ SkeletonForm.displayName = 'SkeletonForm';
 
 const SkeletonChart = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('space-y-4', className)}
-      {...props}
-    >
-      <div className="flex justify-between items-center">
-        <Skeleton className="h-6 w-48" />
-        <div className="flex space-x-2">
-          <Skeleton className="h-8 w-16" />
-          <Skeleton className="h-8 w-16" />
+    <div ref={ref} className={cn('space-y-4', className)} {...props}>
+      <div className='flex justify-between items-center'>
+        <Skeleton className='h-6 w-48' />
+        <div className='flex space-x-2'>
+          <Skeleton className='h-8 w-16' />
+          <Skeleton className='h-8 w-16' />
         </div>
       </div>
-      <div className="h-64 flex items-end space-x-2">
+      <div className='h-64 flex items-end space-x-2'>
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="w-full"
-            style={{ height: `${Math.random() * 60 + 20}%` }}
-          />
+          <Skeleton key={i} className='w-full' style={{ height: `${Math.random() * 60 + 20}%` }} />
         ))}
       </div>
     </div>
@@ -152,8 +129,4 @@ const SkeletonChart = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
 );
 SkeletonChart.displayName = 'SkeletonChart';
 
-export {
-    Skeleton,
-    SkeletonCard, SkeletonChart, SkeletonForm, SkeletonTable
-};
-
+export { Skeleton, SkeletonCard, SkeletonChart, SkeletonForm, SkeletonTable };

@@ -1,15 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import { cn, formatCurrency } from '@/lib/utils';
 import {
-    ArrowTrendingUpIcon,
-    BuildingOfficeIcon,
-    ChartBarIcon,
-    CheckCircleIcon,
-    ExclamationTriangleIcon,
-    PlusIcon,
-    ShieldCheckIcon,
+  ArrowTrendingUpIcon,
+  BuildingOfficeIcon,
+  ChartBarIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  PlusIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -86,7 +87,14 @@ export default function LightweightDashboard() {
         },
       ]);
     } catch (err) {
-      console.error('Erro ao carregar dados:', err);
+      logger.error(
+        'Erro ao carregar dados do dashboard',
+        {
+          component: 'lightweight-dashboard',
+          operation: 'loadDashboardData',
+        },
+        err as Error
+      );
     } finally {
       setIsLoading(false);
     }
@@ -163,9 +171,7 @@ export default function LightweightDashboard() {
             <ArrowTrendingUpIcon className='h-4 w-4 text-green-600' />
           </div>
           <div className='space-y-1'>
-            <div className='text-2xl font-bold text-foreground'>
-              {stats?.totalContracts || 0}
-            </div>
+            <div className='text-2xl font-bold text-foreground'>{stats?.totalContracts || 0}</div>
             <div className='text-sm text-muted-foreground'>Total Contratos</div>
             <div className='text-xs text-green-600'>+2 este mês</div>
           </div>
@@ -271,8 +277,18 @@ export default function LightweightDashboard() {
                   <Link href={`/contracts/${contract.id}`}>
                     <span className='sr-only'>Ver contrato</span>
                     <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 12a3 3 0 11-6 0 3 3 0 016 0z' />
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' />
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                      />
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
+                      />
                     </svg>
                   </Link>
                 </Button>

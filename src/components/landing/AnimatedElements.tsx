@@ -1,19 +1,19 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 // Animated counter component
-export function AnimatedCounter({ 
-  value, 
-  duration = 2, 
-  prefix = '', 
-  suffix = '' 
-}: { 
-  value: number; 
-  duration?: number; 
-  prefix?: string; 
-  suffix?: string; 
+export function AnimatedCounter({
+  value,
+  duration = 2,
+  prefix = '',
+  suffix = '',
+}: {
+  value: number;
+  duration?: number;
+  prefix?: string;
+  suffix?: string;
 }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
@@ -39,24 +39,24 @@ export function AnimatedCounter({
 }
 
 // Staggered animation container
-export function StaggeredContainer({ 
-  children, 
-  className = "",
-  delay = 0.1 
-}: { 
-  children: React.ReactNode; 
+export function StaggeredContainer({
+  children,
+  className = '',
+  delay = 0.1,
+}: {
+  children: React.ReactNode;
   className?: string;
   delay?: number;
 }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
 
   return (
     <motion.div
       ref={ref}
       className={className}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      initial='hidden'
+      animate={isInView ? 'visible' : 'hidden'}
       variants={{
         hidden: { opacity: 0 },
         visible: {
@@ -73,11 +73,11 @@ export function StaggeredContainer({
 }
 
 // Staggered item
-export function StaggeredItem({ 
-  children, 
-  className = "" 
-}: { 
-  children: React.ReactNode; 
+export function StaggeredItem({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -85,13 +85,13 @@ export function StaggeredItem({
       className={className}
       variants={{
         hidden: { opacity: 0, y: 50 },
-        visible: { 
-          opacity: 1, 
+        visible: {
+          opacity: 1,
           y: 0,
           transition: {
             duration: 0.6,
-            ease: "easeOut"
-          }
+            ease: 'easeOut',
+          },
         },
       }}
     >
@@ -101,21 +101,21 @@ export function StaggeredItem({
 }
 
 // Hover animation wrapper
-export function HoverAnimation({ 
-  children, 
-  className = "",
-  scale = 1.05 
-}: { 
-  children: React.ReactNode; 
+export function HoverAnimation({
+  children,
+  className = '',
+  scale = 1.05,
+}: {
+  children: React.ReactNode;
   className?: string;
   scale?: number;
 }) {
   return (
     <motion.div
       className={className}
-      whileHover={{ 
+      whileHover={{
         scale,
-        transition: { duration: 0.2 }
+        transition: { duration: 0.2 },
       }}
       whileTap={{ scale: 0.95 }}
     >
@@ -125,12 +125,12 @@ export function HoverAnimation({
 }
 
 // Floating animation
-export function FloatingAnimation({ 
-  children, 
-  className = "",
-  intensity = 10 
-}: { 
-  children: React.ReactNode; 
+export function FloatingAnimation({
+  children,
+  className = '',
+  intensity = 10,
+}: {
+  children: React.ReactNode;
   className?: string;
   intensity?: number;
 }) {
@@ -143,7 +143,7 @@ export function FloatingAnimation({
       transition={{
         duration: 3,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       }}
     >
       {children}
@@ -152,12 +152,12 @@ export function FloatingAnimation({
 }
 
 // Typewriter effect
-export function TypewriterText({ 
-  text, 
-  className = "",
-  speed = 50 
-}: { 
-  text: string; 
+export function TypewriterText({
+  text,
+  className = '',
+  speed = 50,
+}: {
+  text: string;
   className?: string;
   speed?: number;
 }) {
@@ -190,18 +190,18 @@ export function TypewriterText({
       <motion.span
         animate={{ opacity: [0, 1, 0] }}
         transition={{ duration: 0.8, repeat: Infinity }}
-        className="inline-block w-0.5 h-6 bg-current ml-1"
+        className='inline-block w-0.5 h-6 bg-current ml-1'
       />
     </motion.span>
   );
 }
 
 // Gradient text animation
-export function GradientText({ 
-  children, 
-  className = "" 
-}: { 
-  children: React.ReactNode; 
+export function GradientText({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
   className?: string;
 }) {
   return (
@@ -213,7 +213,7 @@ export function GradientText({
       transition={{
         duration: 3,
         repeat: Infinity,
-        ease: "linear",
+        ease: 'linear',
       }}
     >
       {children}
@@ -222,12 +222,12 @@ export function GradientText({
 }
 
 // Pulse animation
-export function PulseAnimation({ 
-  children, 
-  className = "",
-  intensity = 1.1 
-}: { 
-  children: React.ReactNode; 
+export function PulseAnimation({
+  children,
+  className = '',
+  intensity = 1.1,
+}: {
+  children: React.ReactNode;
   className?: string;
   intensity?: number;
 }) {
@@ -240,7 +240,7 @@ export function PulseAnimation({
       transition={{
         duration: 2,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       }}
     >
       {children}
@@ -249,23 +249,23 @@ export function PulseAnimation({
 }
 
 // Reveal animation
-export function RevealAnimation({ 
-  children, 
-  className = "",
-  direction = "up" 
-}: { 
-  children: React.ReactNode; 
+export function RevealAnimation({
+  children,
+  className = '',
+  direction = 'up',
+}: {
+  children: React.ReactNode;
   className?: string;
-  direction?: "up" | "down" | "left" | "right";
+  direction?: 'up' | 'down' | 'left' | 'right';
 }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  const isInView = useInView(ref, { once: true, margin: '-50px' });
 
   const variants = {
     hidden: {
       opacity: 0,
-      x: direction === "left" ? -50 : direction === "right" ? 50 : 0,
-      y: direction === "up" ? 50 : direction === "down" ? -50 : 0,
+      x: direction === 'left' ? -50 : direction === 'right' ? 50 : 0,
+      y: direction === 'up' ? 50 : direction === 'down' ? -50 : 0,
     },
     visible: {
       opacity: 1,
@@ -273,7 +273,7 @@ export function RevealAnimation({
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -282,8 +282,8 @@ export function RevealAnimation({
     <motion.div
       ref={ref}
       className={className}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      initial='hidden'
+      animate={isInView ? 'visible' : 'hidden'}
       variants={variants}
     >
       {children}
@@ -292,12 +292,12 @@ export function RevealAnimation({
 }
 
 // Magnetic effect
-export function MagneticEffect({ 
-  children, 
-  className = "",
-  strength = 0.3 
-}: { 
-  children: React.ReactNode; 
+export function MagneticEffect({
+  children,
+  className = '',
+  strength = 0.3,
+}: {
+  children: React.ReactNode;
   className?: string;
   strength?: number;
 }) {
@@ -305,11 +305,11 @@ export function MagneticEffect({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;
-    
+
     const rect = ref.current.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
-    
+
     ref.current.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
   };
 
@@ -324,7 +324,7 @@ export function MagneticEffect({
       className={className}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      transition={{ type: "spring", stiffness: 150, damping: 15 }}
+      transition={{ type: 'spring', stiffness: 150, damping: 15 }}
     >
       {children}
     </motion.div>

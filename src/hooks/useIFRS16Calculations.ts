@@ -1,5 +1,6 @@
 import { IFRS16CalculationResult } from '@/lib/calculations/ifrs16-basic';
 import { Contract } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { useCallback, useEffect, useState } from 'react';
 
 interface CacheStats {
@@ -76,14 +77,21 @@ export function useIFRS16Calculations({
       }
 
       const data: CalculationResponse = await response.json();
-      
+
       setResult(data.calculation);
       setCached(data.cached);
       setCacheStats(data.cache_stats);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
-      console.error('Error calculating IFRS 16 values:', err);
+      logger.error(
+        'Error calculating IFRS 16 values:',
+        {
+          component: 'useifrs16calculations',
+          operation: 'calculateIFRS16Values',
+        },
+        err as Error
+      );
     } finally {
       setLoading(false);
     }
@@ -104,7 +112,14 @@ export function useIFRS16Calculations({
       // Refresh calculations after clearing cache
       await calculate();
     } catch (err) {
-      console.error('Error clearing cache:', err);
+      logger.error(
+        'Error clearing cache:',
+        {
+          component: 'useifrs16calculations',
+          operation: 'clearCache',
+        },
+        err as Error
+      );
     }
   }, [contractId, calculate]);
 
@@ -146,7 +161,7 @@ export function useCacheStats() {
 
     try {
       const response = await fetch('/api/cache/ifrs16');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch cache stats');
       }
@@ -174,7 +189,14 @@ export function useCacheStats() {
       // Refresh stats after clearing
       await fetchStats();
     } catch (err) {
-      console.error('Error clearing cache:', err);
+      logger.error(
+        'Error clearing cache:',
+        {
+          component: 'useifrs16calculations',
+          operation: 'clearAllCache',
+        },
+        err as Error
+      );
     }
   }, [fetchStats]);
 
@@ -195,7 +217,14 @@ export function useCacheStats() {
       // Refresh stats after cleanup
       await fetchStats();
     } catch (err) {
-      console.error('Error cleaning up cache:', err);
+      logger.error(
+        'Error cleaning up cache:',
+        {
+          component: 'useifrs16calculations',
+          operation: 'cleanupCache',
+        },
+        err as Error
+      );
     }
   }, [fetchStats]);
 
@@ -251,13 +280,20 @@ export function useIFRS16RealtimeCalculations(
         }
 
         const data: CalculationResponse = await response.json();
-        
+
         setResult(data.calculation);
         setCached(data.cached);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         setError(errorMessage);
-        console.error('Error calculating IFRS 16 values:', err);
+        logger.error(
+          'Error calculating IFRS 16 values:',
+          {
+            component: 'useifrs16calculations',
+            operation: 'calculateIFRS16ValuesDebounced',
+          },
+          err as Error
+        );
       } finally {
         setLoading(false);
       }

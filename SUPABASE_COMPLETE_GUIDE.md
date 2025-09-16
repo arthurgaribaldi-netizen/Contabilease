@@ -65,8 +65,6 @@ SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key_aqui
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=https://contabilease.vercel.app
-NEXTAUTH_SECRET=seu_nextauth_secret_forte_aqui
-NEXTAUTH_URL=https://contabilease.vercel.app
 
 # Security
 NODE_ENV=production
@@ -283,8 +281,6 @@ SELECT cleanup_orphaned_files();
    vercel env add NEXT_PUBLIC_SUPABASE_URL
    vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY
    vercel env add SUPABASE_SERVICE_ROLE_KEY
-   vercel env add NEXTAUTH_SECRET
-   vercel env add NEXTAUTH_URL
    ```
 
 2. Deploy:

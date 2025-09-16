@@ -4,6 +4,7 @@ import IFRS16Impairment from '@/components/contracts/IFRS16Impairment';
 import IFRS16ReportGenerator from '@/components/contracts/IFRS16ReportGenerator';
 import IFRS16Sensitivity from '@/components/contracts/IFRS16Sensitivity';
 import { fetchContractById } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { IFRS16CompleteData } from '@/lib/schemas/ifrs16-complete';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -182,7 +183,14 @@ export default async function IFRS16AnalysisPage({ params }: PageProps) {
       </div>
     );
   } catch (error) {
-    console.error('Error loading contract:', error);
+    logger.error(
+      'Error loading contract:',
+      {
+        component: 'page',
+        operation: 'loadContract',
+      },
+      error as Error
+    );
     notFound();
   }
 }

@@ -4,6 +4,7 @@
  */
 
 import { getCLS, getFCP, getFID, getLCP, getTTFB, type Metric } from 'web-vitals';
+import { logger } from '../logger';
 
 interface PerformanceConfig {
   endpoint: string;
@@ -11,7 +12,12 @@ interface PerformanceConfig {
   sampleRate: number;
 }
 
-interface CustomMetric extends Metric {
+interface CustomMetric {
+  name: string;
+  value: number;
+  delta: number;
+  id: string;
+  navigationType: string;
   timestamp: number;
   url: string;
   userAgent: string;
@@ -154,7 +160,12 @@ class PerformanceMonitor {
     this.metrics.push(customMetric);
 
     if (this.config.debug) {
-      console.log(`[Performance] ${type}:`, customMetric);
+      logger.debug(`Performance metric: ${type}`, {
+        component: 'web-vitals',
+        operation: 'recordMetric',
+        metricType: type,
+        metric: customMetric,
+      });
     }
 
     // Avalia se a métrica está dentro dos limites recomendados
@@ -164,7 +175,7 @@ class PerformanceMonitor {
   private recordCustomMetric(name: string, value: number | object) {
     const metric: CustomMetric = {
       name,
-      value: typeof value === 'number' ? value : JSON.stringify(value),
+      value: typeof value === 'number' ? value : 0,
       delta: typeof value === 'number' ? value : 0,
       id: `${name}_${Date.now()}`,
       navigationType: 'navigate',
@@ -177,7 +188,12 @@ class PerformanceMonitor {
     this.metrics.push(metric);
 
     if (this.config.debug) {
-      console.log(`[Performance] Custom ${name}:`, metric);
+      logger.debug(`Custom performance metric: ${name}`, {
+        component: 'web-vitals',
+        operation: 'recordCustomMetric',
+        metricName: name,
+        metric,
+      });
     }
   }
 
@@ -239,7 +255,17 @@ class PerformanceMonitor {
       };
 
       if (this.config.debug) {
-        console.log('[Performance] Sending metrics:', payload);
+        logger.debug(
+          'Sending performance metrics',
+          {
+            component: 'web-vitals',
+            operation: 'sendMetrics',
+          },
+          undefined,
+          {
+            payload,
+          }
+        );
       }
 
       // Envia métricas para endpoint configurado
@@ -254,7 +280,14 @@ class PerformanceMonitor {
 
       this.metrics = []; // Limpa métricas após envio
     } catch (error) {
-      console.error('[Performance] Failed to send metrics:', error);
+      logger.error(
+        'Failed to send performance metrics',
+        {
+          component: 'web-vitals',
+          operation: 'recordMetric',
+        },
+        error as Error
+      );
     }
   }
 
@@ -282,8 +315,8 @@ class PerformanceMonitor {
         domContentLoaded:
           navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
         loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
-        domInteractive: navigation.domInteractive - navigation.navigationStart,
-        totalTime: navigation.loadEventEnd - navigation.navigationStart,
+        domInteractive: navigation.domInteractive - navigation.fetchStart,
+        totalTime: navigation.loadEventEnd - navigation.fetchStart,
       });
     }
   }

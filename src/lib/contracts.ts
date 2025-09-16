@@ -5,6 +5,7 @@ export type Contract = {
   id: string;
   user_id: string;
   title: string;
+  description?: string | null;
   status: string;
   currency_code: string | null;
   // IFRS 16 Financial Fields
@@ -17,6 +18,12 @@ export type Contract = {
   lease_start_date: string | null;
   lease_end_date: string | null;
   payment_frequency: 'monthly' | 'quarterly' | 'semi-annual' | 'annual' | null;
+  // Additional fields for AI automation and ESG
+  monthly_payment?: number | null;
+  discount_rate_annual?: number | null;
+  lease_classification?: 'operating' | 'finance' | null;
+  lessor_name?: string | null;
+  lessee_name?: string | null;
   created_at: string;
   updated_at: string;
 };

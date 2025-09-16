@@ -1,12 +1,12 @@
 'use client';
 
-import IFRS16Dashboard from '@/components/dashboard/IFRS16Dashboard';
+import IFRS16SpecializedDashboard from '@/components/dashboard/IFRS16SpecializedDashboard';
 import { useToast } from '@/components/ui/Toast';
 import { SkipLink } from '@/components/ui/skip-link';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useAIPersonalization } from '@/lib/ai-personalization';
 import { useSustainableDesign } from '@/lib/sustainable-design';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 
 // Lazy load onboarding components
 const OnboardingTour = lazy(() => import('@/components/onboarding/OnboardingTour'));
@@ -24,17 +24,17 @@ interface PersonalizedLayout {
 export default function DashboardClient() {
   const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
   const { error: showError } = useToast();
-  const { 
-    isTourOpen, 
-    startTour, 
-    closeTour, 
-    completeTour, 
-    shouldShowWelcome, 
+  const {
+    isTourOpen,
+    startTour,
+    closeTour,
+    completeTour,
+    shouldShowWelcome,
     markWelcomeSeen,
     shouldShowOptimizedOnboarding,
     completeOptimizedOnboarding,
     achieveFirstVictory,
-    hasAchievedFirstVictory
+    hasAchievedFirstVictory,
   } = useOnboarding();
 
   // AI Personalization
@@ -45,12 +45,12 @@ export default function DashboardClient() {
 
   useEffect(() => {
     updateBehavior('page-view', { page: 'dashboard' });
-    
+
     // Load advanced features after initial render
     const timer = setTimeout(() => {
       setShowAdvancedFeatures(true);
     }, 1000);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -68,7 +68,6 @@ export default function DashboardClient() {
 
   const personalizedLayout = getLayout();
 
-
   return (
     <div className='space-y-6 relative'>
       {/* Skip Link for Accessibility */}
@@ -76,7 +75,7 @@ export default function DashboardClient() {
 
       {/* Main Dashboard */}
       <div id='main-content'>
-        <IFRS16Dashboard />
+        <IFRS16SpecializedDashboard />
       </div>
 
       {/* Onboarding Modals - Load after initial render */}

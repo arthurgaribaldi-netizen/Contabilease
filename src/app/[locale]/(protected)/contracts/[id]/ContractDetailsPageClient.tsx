@@ -2,6 +2,7 @@
 
 import ContractDetails from '@/components/contracts/ContractDetails';
 import { Contract } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { ContractFormData } from '@/lib/schemas/contract';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -46,7 +47,14 @@ export default function ContractDetailsPageClient({
       // Redirect back to contracts list after successful deletion
       router.push('/contracts');
     } catch (err) {
-      console.error('Error deleting contract:', err);
+      logger.error(
+        'Error deleting contract:',
+        {
+          component: 'contractdetailspageclient',
+          operation: 'deleteContract',
+        },
+        err as Error
+      );
       setError(err instanceof Error ? err.message : 'Erro ao excluir contrato');
     } finally {
       setIsLoading(false);
@@ -72,7 +80,14 @@ export default function ContractDetailsPageClient({
       const result = await response.json();
       setContract(result.contract);
     } catch (err) {
-      console.error('Error saving contract:', err);
+      logger.error(
+        'Error saving contract:',
+        {
+          component: 'contractdetailspageclient',
+          operation: 'saveContract',
+        },
+        err as Error
+      );
       setError(err instanceof Error ? err.message : 'Erro ao salvar contrato');
     } finally {
       setIsSaving(false);

@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * Sistema de Logging Estruturado e Robusto
  * Suporte a múltiplos destinos, níveis e formatação estruturada
  */
@@ -15,13 +15,162 @@ export enum LogLevel {
   TRACE = 'trace',
 }
 
+export type CommonOperations =
+  | 'fetchContract'
+  | 'createContract'
+  | 'updateContract'
+  | 'deleteContract'
+  | 'submitForm'
+  | 'calculateValues'
+  | 'analyzeExceptions'
+  | 'analyzeSensitivity'
+  | 'analyzeImpairment'
+  | 'generateReport'
+  | 'generatePDF'
+  | 'generateExcel'
+  | 'fetchPlans'
+  | 'createCheckoutSession'
+  | 'completeOnboarding'
+  | 'saveContract'
+  | 'loadContract'
+  | 'fetchSummary'
+  | 'fetchAmortizationData'
+  | 'fetchLazyData'
+  | 'fetchLazySummary'
+  | 'clearCache'
+  | 'clearAllCache'
+  | 'cleanupCache'
+  | 'calculateImpact'
+  | 'initializeMFA'
+  | 'handleRequest'
+  | 'handleGETRequest'
+  | 'handlePOSTRequest'
+  | 'handlePUTRequest'
+  | 'handleDELETERequest'
+  | 'signUp'
+  | 'signIn'
+  | 'signInWithMagicLink'
+  | 'signInWithGoogle'
+  | 'signOut'
+  | 'resetPassword'
+  | 'updatePassword'
+  | 'updateProfile'
+  | 'getCurrentUser'
+  | 'getCurrentSession'
+  | 'verifyEmail'
+  | 'refreshSession'
+  | 'observePerformance'
+  | 'recordMetric'
+  | 'observeResources'
+  | 'observeNavigation'
+  | 'recordCustomMetric'
+  | 'sendMetrics'
+  | 'calculateIFRS16Values'
+  | 'calculateIFRS16ValuesDebounced'
+  | 'loadOnboardingState'
+  | 'measureRenderTime'
+  | 'auto-compliance-check'
+  | 'expiration-alert'
+  | 'esg-assessment'
+  | 'cost-optimization'
+  | 'executeAutomationRules'
+  | 'loadUserBehavior'
+  | 'calculateDiscountRate'
+  | 'obfuscateFunction'
+  | 'getSecureEnv'
+  | 'canAccessResource'
+  | 'logSecurityEvent'
+  | 'supabaseSecurity'
+  | 'getUserSubscription'
+  | 'canCreateContract'
+  | 'validateUserPayment'
+  | 'test_operation'
+  | 'database_query'
+  | 'submitContract'
+  | 'operation'
+  | 'POST'
+  | 'sendToGoogleAnalytics'
+  | 'sendToWebhook'
+  | 'storeCriticalMetrics'
+  | 'GET'
+  | 'checkMFAStatus'
+  | 'addModification'
+  | 'generateAdvancedDisclosures'
+  | 'loadDashboardData'
+  | 'handleSignOut'
+  | 'onFirstVictory'
+  | 'calculateContract'
+  | 'http_request'
+  | 'auth'
+  | 'initializeWebVitals'
+  | 'ab_test_assignment'
+  | 'mfa-integration'
+  | 'onboarding';
+
+export type CommonComponents =
+  | 'contractform'
+  | 'contractwizard'
+  | 'contractdetails'
+  | 'contractspageclient'
+  | 'contractdetailspageclient'
+  | 'newcontractpageclient'
+  | 'ifrs16contractform'
+  | 'ifrs16exceptions'
+  | 'ifrs16sensitivity'
+  | 'ifrs16impairment'
+  | 'ifrs16reportgenerator'
+  | 'ifrs16advanceddisclosures'
+  | 'virtualamortizationtable'
+  | 'amortizationscheduletable'
+  | 'contractmodificationexample'
+  | 'optimizedonboarding'
+  | 'pricingplans'
+  | 'mfasetup'
+  | 'useifrs16calculations'
+  | 'auth'
+  | 'security'
+  | 'payment'
+  | 'performance-monitor'
+  | 'web-vitals'
+  | 'ifrs16-discount-rate-calculator'
+  | 'mfa-integration'
+  | 'onboarding'
+  | 'route'
+  | 'page'
+  | 'middleware'
+  | 'performance-hook'
+  | 'performance-monitor'
+  | 'web-vitals'
+  | 'telemetry'
+  | 'conversion-tracking'
+  | 'security-obfuscation'
+  | 'payment'
+  | 'cache-manager'
+  | 'retry-manager'
+  | 'rate-limiting'
+  | 'input-sanitizer'
+  | 'schema-validator'
+  | 'security-audit'
+  | 'bundle-optimization'
+  | 'lazy-loading'
+  | 'bundle-analyzer'
+  | 'ai-automation'
+  | 'ai-personalization'
+  | 'css-specificity'
+  | 'onboarding-hook'
+  | 'dashboard-layout'
+  | 'lightweight-dashboard'
+  | 'performance-api'
+  | 'telemetry-traces-api'
+  | 'telemetry-metrics-api';
+
 export interface LogContext {
   userId?: string;
   sessionId?: string;
   requestId?: string;
   correlationId?: string;
-  component?: string;
-  operation?: string;
+  component?: CommonComponents;
+  operation?: CommonOperations;
   duration?: number;
   [key: string]: unknown;
 }
@@ -83,12 +232,18 @@ class StructuredLogger {
   private getLogLevelFromEnv(): LogLevel {
     const level = process.env.LOG_LEVEL?.toLowerCase();
     switch (level) {
-      case 'error': return LogLevel.ERROR;
-      case 'warn': return LogLevel.WARN;
-      case 'info': return LogLevel.INFO;
-      case 'debug': return LogLevel.DEBUG;
-      case 'trace': return LogLevel.TRACE;
-      default: return process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG;
+      case 'error':
+        return LogLevel.ERROR;
+      case 'warn':
+        return LogLevel.WARN;
+      case 'info':
+        return LogLevel.INFO;
+      case 'debug':
+        return LogLevel.DEBUG;
+      case 'trace':
+        return LogLevel.TRACE;
+      default:
+        return process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG;
     }
   }
 
@@ -154,7 +309,7 @@ class StructuredLogger {
     if (!this.config.enableConsole) return;
 
     const formatted = this.formatLogEntry(entry);
-    
+
     switch (entry.level) {
       case LogLevel.ERROR:
         // eslint-disable-next-line no-console
@@ -183,18 +338,21 @@ class StructuredLogger {
     if (!this.config.enableFile || typeof window !== 'undefined') return;
 
     try {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      
+      // Only run on server side
+      if (typeof window !== 'undefined' || typeof process === 'undefined') return;
+
+      const fs = require('fs').promises;
+      const path = require('path');
+
       const logDir = path.join(process.cwd(), 'logs');
       const logFile = path.join(logDir, `${entry.level}.log`);
-      
+
       // Criar diretório se não existir
       await fs.mkdir(logDir, { recursive: true });
-      
+
       // Verificar tamanho do arquivo e rotacionar se necessário
       await this.rotateLogFile(logFile);
-      
+
       const logLine = this.formatLogEntry(entry) + '\n';
       await fs.appendFile(logFile, logLine);
     } catch (error) {
@@ -205,24 +363,27 @@ class StructuredLogger {
 
   private async rotateLogFile(logFile: string): Promise<void> {
     try {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      
+      // Only run on server side
+      if (typeof window !== 'undefined' || typeof process === 'undefined') return;
+
+      const fs = require('fs').promises;
+      const path = require('path');
+
       const stats = await fs.stat(logFile).catch(() => null);
       if (!stats || stats.size < this.config.maxFileSize) return;
-      
+
       // Rotacionar arquivos
       for (let i = this.config.maxFiles - 1; i > 0; i--) {
         const oldFile = `${logFile}.${i}`;
         const newFile = `${logFile}.${i + 1}`;
-        
+
         try {
           await fs.rename(oldFile, newFile);
         } catch {
           // Arquivo não existe, continuar
         }
       }
-      
+
       // Mover arquivo atual
       await fs.rename(logFile, `${logFile}.1`);
     } catch (error) {
@@ -239,7 +400,7 @@ class StructuredLogger {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.remoteApiKey}`,
+          Authorization: `Bearer ${this.config.remoteApiKey}`,
           'X-Component': this.config.component,
         },
         body: JSON.stringify(entry),
@@ -303,23 +464,44 @@ class StructuredLogger {
   }
 
   // Métodos públicos
-  async error(message: string, context?: LogContext, error?: Error, metadata?: Record<string, unknown>): Promise<void> {
+  async error(
+    message: string,
+    context?: LogContext,
+    error?: Error,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     await this.log(LogLevel.ERROR, message, context, error, metadata);
   }
 
-  async warn(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+  async warn(
+    message: string,
+    context?: LogContext,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     await this.log(LogLevel.WARN, message, context, undefined, metadata);
   }
 
-  async info(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+  async info(
+    message: string,
+    context?: LogContext,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     await this.log(LogLevel.INFO, message, context, undefined, metadata);
   }
 
-  async debug(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+  async debug(
+    message: string,
+    context?: LogContext,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     await this.log(LogLevel.DEBUG, message, context, undefined, metadata);
   }
 
-  async trace(message: string, context?: LogContext, metadata?: Record<string, unknown>): Promise<void> {
+  async trace(
+    message: string,
+    context?: LogContext,
+    metadata?: Record<string, unknown>
+  ): Promise<void> {
     await this.log(LogLevel.TRACE, message, context, undefined, metadata);
   }
 
@@ -333,7 +515,7 @@ class StructuredLogger {
   ): Promise<void> {
     const level = statusCode >= 400 ? LogLevel.ERROR : LogLevel.INFO;
     const message = `${method} ${url} - ${statusCode} (${duration}ms)`;
-    
+
     await this.log(level, message, {
       ...context,
       method,
@@ -352,7 +534,7 @@ class StructuredLogger {
   ): Promise<void> {
     const level = success ? LogLevel.INFO : LogLevel.WARN;
     const message = `Auth ${action} ${success ? 'successful' : 'failed'}`;
-    
+
     await this.log(level, message, {
       ...context,
       userId,
@@ -369,7 +551,7 @@ class StructuredLogger {
     context?: LogContext
   ): Promise<void> {
     const message = `Business operation: ${operation} on ${entityType}:${entityId}`;
-    
+
     await this.log(LogLevel.INFO, message, {
       ...context,
       operation,
@@ -378,18 +560,83 @@ class StructuredLogger {
     });
   }
 
-  async logPerformance(
-    operation: string,
-    duration: number,
-    context?: LogContext
-  ): Promise<void> {
+  async logPerformance(operation: string, duration: number, context?: LogContext): Promise<void> {
     const level = duration > 1000 ? LogLevel.WARN : LogLevel.INFO;
     const message = `Performance: ${operation} took ${duration}ms`;
-    
+
     await this.log(level, message, {
       ...context,
       operation,
       duration,
+    });
+  }
+
+  // Métodos específicos para operações comuns
+  async logContractOperation(
+    operation: CommonOperations,
+    contractId: string,
+    success = true,
+    context?: LogContext
+  ): Promise<void> {
+    const level = success ? LogLevel.INFO : LogLevel.ERROR;
+    const message = `Contract ${operation} ${success ? 'successful' : 'failed'}`;
+
+    await this.log(level, message, {
+      ...context,
+      component: 'contractform',
+      operation,
+      contractId,
+      success,
+    });
+  }
+
+  async logFormSubmission(
+    component: CommonComponents,
+    success = true,
+    context?: LogContext
+  ): Promise<void> {
+    const level = success ? LogLevel.INFO : LogLevel.ERROR;
+    const message = `Form submission ${success ? 'successful' : 'failed'}`;
+
+    await this.log(level, message, {
+      ...context,
+      component,
+      operation: 'submitForm',
+      success,
+    });
+  }
+
+  async logDataFetch(
+    component: CommonComponents,
+    operation: CommonOperations,
+    success = true,
+    context?: LogContext
+  ): Promise<void> {
+    const level = success ? LogLevel.INFO : LogLevel.ERROR;
+    const message = `Data fetch ${success ? 'successful' : 'failed'}`;
+
+    await this.log(level, message, {
+      ...context,
+      component,
+      operation,
+      success,
+    });
+  }
+
+  async logCalculation(
+    component: CommonComponents,
+    operation: CommonOperations,
+    success = true,
+    context?: LogContext
+  ): Promise<void> {
+    const level = success ? LogLevel.INFO : LogLevel.ERROR;
+    const message = `Calculation ${success ? 'successful' : 'failed'}`;
+
+    await this.log(level, message, {
+      ...context,
+      component,
+      operation,
+      success,
     });
   }
 
@@ -412,4 +659,3 @@ export const logger = new StructuredLogger();
 
 // Exportar tipos e classe para uso avançado
 export { StructuredLogger };
-

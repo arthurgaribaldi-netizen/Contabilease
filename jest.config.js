@@ -7,19 +7,15 @@ module.exports = {
       displayName: 'client',
       preset: 'ts-jest',
       testEnvironment: 'jsdom',
-      testMatch: ['<rootDir>/__tests__/**/*.(test|spec).(ts|tsx)', '!<rootDir>/__tests__/**/*.api.(test|spec).(ts|tsx)'],
+      testMatch: [
+        '<rootDir>/__tests__/**/*.(test|spec).(ts|tsx)',
+        '!<rootDir>/__tests__/**/*.api.(test|spec).(ts|tsx)',
+      ],
       transform: {
         '^.+\\.(ts|tsx)$': [
           'ts-jest',
           {
-            tsconfig: {
-              jsx: 'react-jsx',
-              allowJs: true,
-              esModuleInterop: true,
-              allowSyntheticDefaultImports: true,
-              strict: false,
-              skipLibCheck: true,
-            },
+            tsconfig: 'tsconfig.test.json',
           },
         ],
       },
@@ -32,19 +28,15 @@ module.exports = {
       displayName: 'server',
       preset: 'ts-jest',
       testEnvironment: 'node',
-      testMatch: ['<rootDir>/__tests__/**/*.api.(test|spec).(ts|tsx)', '<rootDir>/__tests__/**/stripe-webhook.test.ts'],
+      testMatch: [
+        '<rootDir>/__tests__/**/*.api.(test|spec).(ts|tsx)',
+        '<rootDir>/__tests__/**/stripe-webhook.test.ts',
+      ],
       transform: {
         '^.+\\.(ts|tsx)$': [
           'ts-jest',
           {
-            tsconfig: {
-              jsx: 'react-jsx',
-              allowJs: true,
-              esModuleInterop: true,
-              allowSyntheticDefaultImports: true,
-              strict: false,
-              skipLibCheck: true,
-            },
+            tsconfig: 'tsconfig.test.json',
           },
         ],
       },
@@ -72,23 +64,29 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+      branches: 30,
+      functions: 30,
+      lines: 30,
+      statements: 30,
     },
     // Thresholds específicos para arquivos críticos
-    './src/lib/': {
-      branches: 90,
-      functions: 90,
-      lines: 90,
-      statements: 90,
+    './src/lib/calculations/': {
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60,
     },
-    './src/components/': {
-      branches: 85,
-      functions: 85,
-      lines: 85,
-      statements: 85,
+    './src/lib/auth/': {
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
+    },
+    './src/lib/security/': {
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
   },
 };

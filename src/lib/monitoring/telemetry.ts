@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * Sistema de Monitoramento e Telemetria
  * Coleta métricas de performance, erros e uso da aplicação
  */
@@ -61,7 +61,7 @@ class TelemetryManager {
   constructor() {
     this.endpoint = process.env.TELEMETRY_ENDPOINT || '';
     this.apiKey = process.env.TELEMETRY_API_KEY || '';
-    
+
     if (typeof window === 'undefined') {
       this.startPeriodicFlush();
     }
@@ -78,7 +78,7 @@ class TelemetryManager {
     };
 
     this.events.push(telemetryEvent);
-    
+
     if (this.events.length >= this.batchSize) {
       this.flushEvents();
     }
@@ -87,10 +87,10 @@ class TelemetryManager {
   // Métricas de performance
   trackPerformance(metric: PerformanceMetric): void {
     this.metrics.push(metric);
-    
+
     // Verificar alertas
     this.checkAlertRules(metric);
-    
+
     if (this.metrics.length >= this.batchSize) {
       this.flushMetrics();
     }
@@ -99,10 +99,10 @@ class TelemetryManager {
   // Métricas de erro
   trackError(error: ErrorMetric): void {
     this.errors.push(error);
-    
+
     // Verificar alertas de erro
     this.checkErrorAlertRules(error);
-    
+
     if (this.errors.length >= this.batchSize) {
       this.flushErrors();
     }
@@ -137,7 +137,7 @@ class TelemetryManager {
   // Métricas de página
   trackPageView(path: string, duration?: number): void {
     this.trackEvent('page_view', { path, duration });
-    
+
     if (duration) {
       this.trackPerformance({
         name: 'page.load_time',
@@ -172,24 +172,34 @@ class TelemetryManager {
   private checkAlertRules(metric: PerformanceMetric): void {
     for (const rule of this.alertRules) {
       if (!rule.enabled || rule.metric !== metric.name) continue;
-      
+
       // Verificar cooldown
       if (rule.lastTriggered) {
         const lastTriggered = new Date(rule.lastTriggered);
         const cooldownMs = rule.cooldown * 1000;
         if (Date.now() - lastTriggered.getTime() < cooldownMs) continue;
       }
-      
+
       // Verificar threshold
       let shouldAlert = false;
       switch (rule.operator) {
-        case 'gt': shouldAlert = metric.value > rule.threshold; break;
-        case 'lt': shouldAlert = metric.value < rule.threshold; break;
-        case 'eq': shouldAlert = metric.value === rule.threshold; break;
-        case 'gte': shouldAlert = metric.value >= rule.threshold; break;
-        case 'lte': shouldAlert = metric.value <= rule.threshold; break;
+        case 'gt':
+          shouldAlert = metric.value > rule.threshold;
+          break;
+        case 'lt':
+          shouldAlert = metric.value < rule.threshold;
+          break;
+        case 'eq':
+          shouldAlert = metric.value === rule.threshold;
+          break;
+        case 'gte':
+          shouldAlert = metric.value >= rule.threshold;
+          break;
+        case 'lte':
+          shouldAlert = metric.value <= rule.threshold;
+          break;
       }
-      
+
       if (shouldAlert) {
         this.triggerAlert(rule, metric);
       }
@@ -207,7 +217,7 @@ class TelemetryManager {
   // Disparar alerta
   private triggerAlert(rule: AlertRule, metric: PerformanceMetric): void {
     rule.lastTriggered = new Date().toISOString();
-    
+
     const alert = {
       ruleId: rule.id,
       ruleName: rule.name,
@@ -220,7 +230,7 @@ class TelemetryManager {
     };
 
     logger.warn(`Alert triggered: ${rule.name}`, alert);
-    
+
     // Enviar alerta para sistema externo
     this.sendAlert(alert);
   }
@@ -237,7 +247,7 @@ class TelemetryManager {
     };
 
     logger.error(`Error alert triggered`, alert);
-    
+
     // Enviar alerta para sistema externo
     this.sendAlert(alert);
   }
@@ -251,7 +261,7 @@ class TelemetryManager {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify(alert),
       });
@@ -299,7 +309,7 @@ class TelemetryManager {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
           type,
@@ -325,7 +335,7 @@ class TelemetryManager {
   // Obter session ID
   private getSessionId(): string {
     if (typeof window === 'undefined') return 'server';
-    
+
     let sessionId = sessionStorage.getItem('telemetry_session_id');
     if (!sessionId) {
       sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -367,6 +377,7 @@ class TelemetryManager {
 
 // Instância global
 export const telemetry = new TelemetryManager();
+export const telemetryManager = telemetry;
 
 // Configurar regras de alerta padrão
 telemetry.configureAlertRules([
@@ -430,17 +441,17 @@ export function useTelemetry() {
 export function withTelemetry(handler: any) {
   return async (req: any, res: any) => {
     const startTime = Date.now();
-    
+
     try {
       const result = await handler(req, res);
       const duration = Date.now() - startTime;
-      
+
       telemetry.trackAPICall(req.url, req.method, res.statusCode, duration);
-      
+
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       telemetry.trackError({
         error: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : undefined,
@@ -452,7 +463,7 @@ export function withTelemetry(handler: any) {
           duration,
         },
       });
-      
+
       throw error;
     }
   };
@@ -464,17 +475,28 @@ export function initializeTelemetry() {
 
   // Track page views
   telemetry.trackPageView(window.location.pathname);
-  
+
   // Track web vitals
   if ('web-vitals' in window) {
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(telemetry.trackWebVitals);
-      getFID(telemetry.trackWebVitals);
-      getFCP(telemetry.trackWebVitals);
-      getLCP(telemetry.trackWebVitals);
-      getTTFB(telemetry.trackWebVitals);
-    });
+    import('web-vitals')
+      .then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+        getCLS(telemetry.trackWebVitals);
+        getFID(telemetry.trackWebVitals);
+        getFCP(telemetry.trackWebVitals);
+        getLCP(telemetry.trackWebVitals);
+        getTTFB(telemetry.trackWebVitals);
+      })
+      .catch(error => {
+        logger.error(
+          'Failed to load web-vitals',
+          {
+            component: 'telemetry',
+            operation: 'initializeWebVitals',
+          },
+          error as Error
+        );
+      });
   }
-  
+
   logger.info('Telemetry initialized');
 }

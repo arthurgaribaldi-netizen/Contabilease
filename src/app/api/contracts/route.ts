@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -30,13 +30,13 @@ export async function GET(_request: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      logger.error('Error fetching contracts:', error);
+      logger.error('Error fetching contracts:', { error: String(error) });
       return NextResponse.json({ error: 'Failed to fetch contracts' }, { status: 500 });
     }
 
     return NextResponse.json({ contracts: data ?? [] });
   } catch (error) {
-    logger.error('Unexpected error:', error);
+    logger.error('Unexpected error:', { error: String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -108,7 +108,7 @@ async function createContract(userId: string, contractData: Record<string, unkno
   const { data, error } = await supabase.from('contracts').insert(insertData).select().single();
 
   if (error) {
-    logger.error('Error creating contract:', error);
+    logger.error('Error creating contract:', { error: String(error) });
     return NextResponse.json({ error: 'Failed to create contract' }, { status: 500 });
   }
 
@@ -128,10 +128,13 @@ export async function POST(request: NextRequest) {
     // Check if user can create more contracts
     const canCreate = await canUserPerformAction(userId, 'create_contract');
     if (!canCreate) {
-      return NextResponse.json({ 
-        error: 'Subscription limit reached. Please upgrade your plan to create more contracts.',
-        code: 'SUBSCRIPTION_LIMIT_REACHED'
-      }, { status: 403 });
+      return NextResponse.json(
+        {
+          error: 'Subscription limit reached. Please upgrade your plan to create more contracts.',
+          code: 'SUBSCRIPTION_LIMIT_REACHED',
+        },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
@@ -143,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     return await createContract(userId, validation.data as Record<string, unknown>);
   } catch (error) {
-    logger.error('Unexpected error:', error);
+    logger.error('Unexpected error:', { error: String(error) });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

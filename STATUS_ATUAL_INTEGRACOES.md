@@ -32,7 +32,6 @@ Baseado na análise do projeto, aqui está o status atual de cada integração:
 
 ### 3. **🔐 GOOGLE OAUTH** - ✅ **90% IMPLEMENTADO**
 **Status:** Sistema implementado, precisa configuração externa
-- ✅ NextAuth configurado
 - ✅ Provider Google implementado
 - ✅ Callbacks e redirecionamentos
 - ✅ Integração com Supabase Auth

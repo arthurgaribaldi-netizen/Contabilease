@@ -2,12 +2,13 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 import { invalidateContractCache } from '@/lib/cache/ifrs16-cache';
+import { logger } from '@/lib/logger';
 import { contractSchema } from '@/lib/schemas/contract';
 import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
@@ -33,13 +34,27 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
       }
-      console.error('Error fetching contract:', error);
+      logger.error(
+        'Error fetching contract:',
+        {
+          component: 'route',
+          operation: 'fetchContract',
+        },
+        error as Error
+      );
       return NextResponse.json({ error: 'Failed to fetch contract' }, { status: 500 });
     }
 
     return NextResponse.json({ contract: data });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logger.error(
+      'Unexpected error:',
+      {
+        component: 'route',
+        operation: 'handleRequest',
+      },
+      error as Error
+    );
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -107,7 +122,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
       }
-      console.error('Error updating contract:', error);
+      logger.error(
+        'Error updating contract:',
+        {
+          component: 'route',
+          operation: 'updateContract',
+        },
+        error as Error
+      );
       return NextResponse.json({ error: 'Failed to update contract' }, { status: 500 });
     }
 
@@ -116,7 +138,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json({ contract: data });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logger.error(
+      'Unexpected error:',
+      {
+        component: 'route',
+        operation: 'handleRequest',
+      },
+      error as Error
+    );
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -141,13 +170,27 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
       if (error.code === 'PGRST116') {
         return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
       }
-      console.error('Error deleting contract:', error);
+      logger.error(
+        'Error deleting contract:',
+        {
+          component: 'route',
+          operation: 'deleteContract',
+        },
+        error as Error
+      );
       return NextResponse.json({ error: 'Failed to delete contract' }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Contract deleted successfully' });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logger.error(
+      'Unexpected error:',
+      {
+        component: 'route',
+        operation: 'handleRequest',
+      },
+      error as Error
+    );
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

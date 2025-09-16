@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -12,9 +12,9 @@
 import { IFRS16CalculationEngine } from '@/lib/calculations/ifrs16-engine';
 import { logger } from '@/lib/logger';
 import {
-    ContractModificationValidationSchema,
-    type ContractModification,
-    type ContractModificationValidation,
+  ContractModificationValidationSchema,
+  type ContractModification,
+  type ContractModificationValidation,
 } from '@/lib/schemas/ifrs16-complete';
 import { IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
 import { useCallback, useEffect, useState } from 'react';
@@ -147,7 +147,9 @@ export default function ContractModificationManager({
 
   useEffect(() => {
     if (showForm) {
-      calculateFinancialImpact();
+      calculateFinancialImpact().catch(error => {
+        logger.error('Error in calculateFinancialImpact:', error);
+      });
     }
   }, [showForm, calculateFinancialImpact]);
 

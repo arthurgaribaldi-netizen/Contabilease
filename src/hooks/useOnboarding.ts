@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 
 interface OnboardingState {
@@ -35,7 +36,14 @@ export function useOnboarding() {
         const parsed = JSON.parse(saved);
         setOnboardingState(parsed);
       } catch (error) {
-        console.error('Error parsing onboarding state:', error);
+        logger.error(
+          'Error parsing onboarding state',
+          {
+            component: 'onboarding-hook',
+            operation: 'loadOnboardingState',
+          },
+          error as Error
+        );
       }
     }
   }, []);

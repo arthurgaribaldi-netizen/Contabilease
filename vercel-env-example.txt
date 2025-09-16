@@ -13,9 +13,6 @@ SUPABASE_JWT_SECRET=your_supabase_jwt_secret
 # APPLICATION CONFIGURATION
 # ===========================================
 NEXT_PUBLIC_APP_URL=https://contabilease.vercel.app
-NEXTAUTH_SECRET=your_nextauth_secret_minimum_32_characters
-NEXTAUTH_URL=https://contabilease.vercel.app
-JWT_SECRET=your-super-secret-jwt-key-here-minimum-32-characters
 
 # ===========================================
 # STRIPE CONFIGURATION

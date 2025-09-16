@@ -2,17 +2,22 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 /**
  * IFRS 16 Discount Rate Calculator
- * 
+ *
  * Calcula automaticamente a taxa de desconto conforme IFRS 16:
  * - Taxa incremental de empréstimo (incremental borrowing rate)
  * - Taxa implícita do arrendador (quando disponível)
+ */
+
+import { logger } from '../logger';
+
+/**
  * - Taxas de referência de mercado
  * - Ajustes por risco específico do contrato
  */
@@ -21,7 +26,11 @@ import { IFRS16CompleteData } from '@/lib/schemas/ifrs16-complete';
 
 export interface DiscountRateCalculationResult {
   calculated_rate: number;
-  calculation_method: 'incremental_borrowing_rate' | 'implicit_rate' | 'market_rate' | 'risk_adjusted_rate';
+  calculation_method:
+    | 'incremental_borrowing_rate'
+    | 'implicit_rate'
+    | 'market_rate'
+    | 'risk_adjusted_rate';
   confidence_level: 'high' | 'medium' | 'low';
   calculation_details: {
     base_rate: number;
@@ -87,7 +96,15 @@ export class IFRS16DiscountRateCalculator {
           return result;
         }
       } catch (error) {
-        console.warn('Discount rate calculation method failed:', error);
+        logger.warn(
+          'Discount rate calculation method failed',
+          {
+            component: 'ifrs16-discount-rate-calculator',
+            operation: 'calculateDiscountRate',
+            method: method.name,
+          },
+          error as Error
+        );
       }
     }
 
@@ -101,7 +118,7 @@ export class IFRS16DiscountRateCalculator {
   private calculateIncrementalBorrowingRate(): DiscountRateCalculationResult {
     const baseRate = this.marketData.base_rate;
     const riskAdjustments = this.calculateRiskAdjustments();
-    
+
     const totalAdjustment = riskAdjustments.reduce((sum, adj) => sum + adj.adjustment, 0);
     const finalRate = baseRate + totalAdjustment;
 
@@ -135,7 +152,11 @@ export class IFRS16DiscountRateCalculator {
     }
 
     // Simplified implicit rate calculation using present value formula
-    const implicitRate = this.calculateImplicitRateFromPV(assetFairValue, monthlyPayment, termMonths);
+    const implicitRate = this.calculateImplicitRateFromPV(
+      assetFairValue,
+      monthlyPayment,
+      termMonths
+    );
 
     return {
       calculated_rate: implicitRate,
@@ -170,9 +191,21 @@ export class IFRS16DiscountRateCalculator {
       calculation_details: {
         base_rate: baseRate,
         risk_adjustments: [
-          { factor: 'Credit Spread', adjustment: creditSpread, justification: 'Ajuste por risco de crédito' },
-          { factor: 'Asset Type', adjustment: assetAdjustment, justification: 'Ajuste por tipo de ativo' },
-          { factor: 'Term', adjustment: termAdjustment, justification: 'Ajuste por prazo do contrato' },
+          {
+            factor: 'Credit Spread',
+            adjustment: creditSpread,
+            justification: 'Ajuste por risco de crédito',
+          },
+          {
+            factor: 'Asset Type',
+            adjustment: assetAdjustment,
+            justification: 'Ajuste por tipo de ativo',
+          },
+          {
+            factor: 'Term',
+            adjustment: termAdjustment,
+            justification: 'Ajuste por prazo do contrato',
+          },
         ],
         final_rate: finalRate,
         justification: 'Taxa baseada em dados de mercado e ajustes por risco específico',
@@ -232,7 +265,7 @@ export class IFRS16DiscountRateCalculator {
     // Simplified credit risk assessment
     // In a real implementation, this would use credit rating data
     const termMonths = this.contractData.lease_term_months;
-    
+
     if (termMonths <= 12) return 0.5; // Low risk for short term
     if (termMonths <= 36) return 1.0; // Medium risk for medium term
     return 1.5; // Higher risk for long term
@@ -243,14 +276,14 @@ export class IFRS16DiscountRateCalculator {
    */
   private assessAssetRisk(): number {
     const assetType = this.contractData.asset.asset_type;
-    
+
     const riskMap: Record<string, number> = {
-      'real_estate': 0.2,    // Low risk - stable value
-      'equipment': 0.5,       // Medium risk
-      'vehicle': 0.8,         // Higher risk - depreciation
-      'machinery': 0.6,       // Medium-high risk
-      'technology': 1.2,     // High risk - rapid obsolescence
-      'other': 0.7,          // Default medium-high risk
+      real_estate: 0.2, // Low risk - stable value
+      equipment: 0.5, // Medium risk
+      vehicle: 0.8, // Higher risk - depreciation
+      machinery: 0.6, // Medium-high risk
+      technology: 1.2, // High risk - rapid obsolescence
+      other: 0.7, // Default medium-high risk
     };
 
     return riskMap[assetType] || 0.7;
@@ -261,7 +294,7 @@ export class IFRS16DiscountRateCalculator {
    */
   private assessTermRisk(): number {
     const termMonths = this.contractData.lease_term_months;
-    
+
     if (termMonths <= 12) return 0.0;
     if (termMonths <= 24) return 0.2;
     if (termMonths <= 36) return 0.4;
@@ -280,7 +313,11 @@ export class IFRS16DiscountRateCalculator {
   /**
    * Calculate implicit rate from present value
    */
-  private calculateImplicitRateFromPV(fairValue: number, monthlyPayment: number, termMonths: number): number {
+  private calculateImplicitRateFromPV(
+    fairValue: number,
+    monthlyPayment: number,
+    termMonths: number
+  ): number {
     // Use Newton-Raphson method to solve for the rate
     let rate = 0.01; // Start with 1% monthly rate
     const tolerance = 0.0001;
@@ -289,13 +326,13 @@ export class IFRS16DiscountRateCalculator {
     for (let i = 0; i < maxIterations; i++) {
       const pv = this.calculatePresentValue(monthlyPayment, rate, termMonths);
       const derivative = this.calculatePresentValueDerivative(monthlyPayment, rate, termMonths);
-      
+
       const newRate = rate - (pv - fairValue) / derivative;
-      
+
       if (Math.abs(newRate - rate) < tolerance) {
         return newRate * 12 * 100; // Convert to annual percentage
       }
-      
+
       rate = newRate;
     }
 
@@ -307,13 +344,17 @@ export class IFRS16DiscountRateCalculator {
    */
   private calculatePresentValue(payment: number, monthlyRate: number, periods: number): number {
     if (monthlyRate === 0) return payment * periods;
-    return payment * (1 - Math.pow(1 + monthlyRate, -periods)) / monthlyRate;
+    return (payment * (1 - Math.pow(1 + monthlyRate, -periods))) / monthlyRate;
   }
 
   /**
    * Calculate derivative of present value
    */
-  private calculatePresentValueDerivative(payment: number, monthlyRate: number, periods: number): number {
+  private calculatePresentValueDerivative(
+    payment: number,
+    monthlyRate: number,
+    periods: number
+  ): number {
     if (monthlyRate === 0) return 0;
     const pv = this.calculatePresentValue(payment, monthlyRate, periods);
     return (payment * periods * Math.pow(1 + monthlyRate, -periods - 1) - pv) / monthlyRate;
@@ -346,7 +387,10 @@ export class IFRS16DiscountRateCalculator {
   /**
    * Generate justification for incremental borrowing rate
    */
-  private generateIncrementalBorrowingJustification(baseRate: number, adjustments: RiskAdjustment[]): string {
+  private generateIncrementalBorrowingJustification(
+    baseRate: number,
+    adjustments: RiskAdjustment[]
+  ): string {
     const totalAdjustment = adjustments.reduce((sum, adj) => sum + adj.adjustment, 0);
     return `Taxa incremental de empréstimo calculada como taxa base (${baseRate}%) mais ajustes por risco específico (${totalAdjustment}%). Método conforme IFRS 16.26.`;
   }

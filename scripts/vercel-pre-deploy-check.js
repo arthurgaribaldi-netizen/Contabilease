@@ -15,7 +15,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   reset: '\x1b[0m',
-  bold: '\x1b[1m'
+  bold: '\x1b[1m',
 };
 
 // Função para log colorido
@@ -28,12 +28,12 @@ const checks = [
   {
     name: 'Arquivo vercel.json',
     check: () => fs.existsSync('vercel.json'),
-    fix: 'Criar arquivo vercel.json com configurações adequadas'
+    fix: 'Criar arquivo vercel.json com configurações adequadas',
   },
   {
     name: 'Arquivo next.config.js',
     check: () => fs.existsSync('next.config.js'),
-    fix: 'Verificar se next.config.js está configurado corretamente'
+    fix: 'Verificar se next.config.js está configurado corretamente',
   },
   {
     name: 'Package.json com scripts de build',
@@ -41,7 +41,7 @@ const checks = [
       const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
       return pkg.scripts && pkg.scripts.build;
     },
-    fix: 'Verificar se package.json tem script de build configurado'
+    fix: 'Verificar se package.json tem script de build configurado',
   },
   {
     name: 'Dependências críticas instaladas',
@@ -50,28 +50,28 @@ const checks = [
       const criticalDeps = ['next', 'react', 'react-dom'];
       return criticalDeps.every(dep => pkg.dependencies[dep]);
     },
-    fix: 'Instalar dependências críticas: next, react, react-dom'
+    fix: 'Instalar dependências críticas: next, react, react-dom',
   },
   {
     name: 'Arquivo de exemplo de variáveis de ambiente',
     check: () => fs.existsSync('vercel-env-example.txt'),
-    fix: 'Criar arquivo de exemplo com variáveis de ambiente necessárias'
+    fix: 'Criar arquivo de exemplo com variáveis de ambiente necessárias',
   },
   {
     name: 'Configuração TypeScript',
     check: () => fs.existsSync('tsconfig.json'),
-    fix: 'Verificar configuração do TypeScript'
+    fix: 'Verificar configuração do TypeScript',
   },
   {
     name: 'Middleware configurado',
     check: () => fs.existsSync('middleware.ts'),
-    fix: 'Verificar se middleware.ts está configurado'
+    fix: 'Verificar se middleware.ts está configurado',
   },
   {
     name: 'Estrutura de pastas src/app',
     check: () => fs.existsSync('src/app'),
-    fix: 'Verificar estrutura de pastas do Next.js 13+'
-  }
+    fix: 'Verificar estrutura de pastas do Next.js 13+',
+  },
 ];
 
 // Variáveis de ambiente críticas
@@ -80,9 +80,8 @@ const criticalEnvVars = [
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
   'NEXT_PUBLIC_APP_URL',
-  'NEXTAUTH_SECRET',
   'STRIPE_SECRET_KEY',
-  'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'
+  'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
 ];
 
 // Função principal
@@ -94,7 +93,7 @@ function main() {
 
   // Executar verificações
   log(colors.bold, '📋 Verificando Configurações do Projeto:');
-  
+
   checks.forEach((check, index) => {
     const passed = check.check();
     if (passed) {
@@ -108,7 +107,7 @@ function main() {
   });
 
   log(colors.bold, '\n🔐 Verificando Variáveis de Ambiente Críticas:');
-  
+
   // Verificar se arquivo .env.example existe
   const envExampleExists = fs.existsSync('env.example');
   if (envExampleExists) {
@@ -129,9 +128,12 @@ function main() {
 
   log(colors.bold, '\n📊 Resumo da Verificação:');
   log(colors.blue, `Verificações passaram: ${passedChecks}/${checks.length}`);
-  
+
   if (allPassed) {
-    log(colors.green + colors.bold, '\n🎉 Todas as verificações passaram! Projeto pronto para deploy no Vercel.');
+    log(
+      colors.green + colors.bold,
+      '\n🎉 Todas as verificações passaram! Projeto pronto para deploy no Vercel.'
+    );
     log(colors.blue, '\n📝 Próximos passos:');
     log(colors.blue, '1. Configure as variáveis de ambiente no dashboard do Vercel');
     log(colors.blue, '2. Conecte seu repositório ao Vercel');
@@ -139,8 +141,14 @@ function main() {
     log(colors.blue, '4. Configure webhooks e integrações');
     process.exit(0);
   } else {
-    log(colors.red + colors.bold, '\n⚠️  Algumas verificações falharam. Corrija os problemas antes do deploy.');
-    log(colors.yellow, '\n💡 Dica: Consulte o arquivo VERCEL_DEPLOYMENT_GUIDE.md para instruções detalhadas.');
+    log(
+      colors.red + colors.bold,
+      '\n⚠️  Algumas verificações falharam. Corrija os problemas antes do deploy.'
+    );
+    log(
+      colors.yellow,
+      '\n💡 Dica: Consulte o arquivo VERCEL_DEPLOYMENT_GUIDE.md para instruções detalhadas.'
+    );
     process.exit(1);
   }
 }

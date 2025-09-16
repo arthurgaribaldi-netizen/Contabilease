@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import ContractWizard from '@/components/contracts/ContractWizard';
 import Breadcrumbs, { BreadcrumbItem } from '@/components/ui/Breadcrumbs';
 import { useToast } from '@/components/ui/Toast';
 import { createContract } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { ContractFormData } from '@/lib/schemas/contract';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function NewContractPageClient() {
   const router = useRouter();
@@ -25,7 +26,14 @@ export default function NewContractPageClient() {
       success('Contrato criado', 'O contrato foi criado com sucesso!');
       router.push('/contracts');
     } catch (error) {
-      console.error('Error creating contract:', error);
+      logger.error(
+        'Error creating contract:',
+        {
+          component: 'newcontractpageclient',
+          operation: 'createContract',
+        },
+        error as Error
+      );
       showError('Erro ao criar contrato', 'Não foi possível criar o contrato. Tente novamente.');
     } finally {
       setIsLoading(false);

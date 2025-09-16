@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -10,6 +10,7 @@
 'use client';
 
 import { IFRS16CalculationEngine } from '@/lib/calculations/ifrs16-engine';
+import { CONTRACT_LIMITS } from '@/lib/constants/validation-limits';
 import { logger } from '@/lib/logger';
 import { IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
 import { useCallback, useEffect, useState } from 'react';
@@ -34,7 +35,9 @@ const validationRules: ValidationRule[] = [
     name: 'Prazo do Contrato',
     description: 'Verifica se o prazo do contrato está dentro de limites razoáveis',
     severity: 'warning',
-    check: data => data.lease_term_months >= 12 && data.lease_term_months <= 120,
+    check: data =>
+      data.lease_term_months >= CONTRACT_LIMITS.TERM_TYPICAL_MIN_MONTHS &&
+      data.lease_term_months <= CONTRACT_LIMITS.TERM_TYPICAL_MAX_MONTHS,
     message: 'Prazo deve estar entre 12 e 120 meses para contratos típicos',
   },
   {
@@ -42,7 +45,9 @@ const validationRules: ValidationRule[] = [
     name: 'Taxa de Desconto',
     description: 'Verifica se a taxa de desconto está dentro de limites de mercado',
     severity: 'warning',
-    check: data => data.discount_rate_annual >= 1 && data.discount_rate_annual <= 25,
+    check: data =>
+      data.discount_rate_annual >= CONTRACT_LIMITS.DISCOUNT_RATE_TYPICAL_MIN &&
+      data.discount_rate_annual <= CONTRACT_LIMITS.DISCOUNT_RATE_TYPICAL_MAX,
     message: 'Taxa de desconto deve estar entre 1% e 25% a.a.',
   },
   {
@@ -50,7 +55,9 @@ const validationRules: ValidationRule[] = [
     name: 'Valor do Pagamento',
     description: 'Verifica se o valor do pagamento mensal é razoável',
     severity: 'warning',
-    check: data => data.monthly_payment > 0 && data.monthly_payment <= 1000000,
+    check: data =>
+      data.monthly_payment > CONTRACT_LIMITS.PAYMENT_MIN &&
+      data.monthly_payment <= CONTRACT_LIMITS.PAYMENT_MAX_REASONABLE,
     message: 'Pagamento mensal deve ser positivo e menor que R$ 1.000.000',
   },
   {
@@ -61,7 +68,9 @@ const validationRules: ValidationRule[] = [
     check: data => {
       if (!data.guaranteed_residual_value) return true;
       const totalPayments = data.monthly_payment * data.lease_term_months;
-      return data.guaranteed_residual_value <= totalPayments * 0.3;
+      return (
+        data.guaranteed_residual_value <= totalPayments * CONTRACT_LIMITS.RESIDUAL_VALUE_MAX_RATIO
+      );
     },
     message: 'Valor residual não deve exceder 30% do total de pagamentos',
   },
@@ -73,7 +82,9 @@ const validationRules: ValidationRule[] = [
     check: data => {
       if (!data.purchase_option_price) return true;
       const totalPayments = data.monthly_payment * data.lease_term_months;
-      return data.purchase_option_price <= totalPayments * 0.5;
+      return (
+        data.purchase_option_price <= totalPayments * CONTRACT_LIMITS.PURCHASE_OPTION_MAX_RATIO
+      );
     },
     message: 'Preço da opção de compra não deve exceder 50% do total de pagamentos',
   },
@@ -88,7 +99,7 @@ const validationRules: ValidationRule[] = [
       if (data.purchase_option_exercisable && data.purchase_option_price) {
         const totalPayments = data.monthly_payment * data.lease_term_months;
         const purchaseRatio = data.purchase_option_price / totalPayments;
-        return purchaseRatio < 0.1; // Less than 10% suggests finance lease
+        return purchaseRatio < CONTRACT_LIMITS.PURCHASE_OPTION_FINANCE_LEASE_RATIO; // Less than 10% suggests finance lease
       }
       return true;
     },
@@ -119,7 +130,9 @@ const validationRules: ValidationRule[] = [
       const calculatedMonths =
         (endDate.getFullYear() - startDate.getFullYear()) * 12 +
         (endDate.getMonth() - startDate.getMonth());
-      return Math.abs(calculatedMonths - data.lease_term_months) <= 1;
+      return (
+        Math.abs(calculatedMonths - data.lease_term_months) <= CONTRACT_LIMITS.TITLE_MIN_LENGTH
+      );
     },
     message: 'Prazo em meses deve corresponder aproximadamente às datas informadas',
   },

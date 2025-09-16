@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Hook para debounce
@@ -20,10 +21,7 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 // Hook para throttle
-export function useThrottle<T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T {
+export function useThrottle<T extends (...args: any[]) => any>(callback: T, delay: number): T {
   const lastRun = useRef(Date.now());
 
   return useCallback(
@@ -85,7 +83,12 @@ export function usePerformanceMonitor(componentName: string) {
 
     // Log performance metrics in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[Performance] ${componentName} rendered in ${duration}ms`);
+      logger.debug(`${componentName} rendered in ${duration}ms`, {
+        component: 'performance-hook',
+        operation: 'measureRenderTime',
+        componentName,
+        duration,
+      });
     }
 
     // Reset start time for next render
@@ -107,7 +110,7 @@ export function useSmartMemo<T>(
 
   useEffect(() => {
     const now = Date.now();
-    const hasDepsChanged = 
+    const hasDepsChanged =
       dependencies.current.length !== deps.length ||
       dependencies.current.some((dep, index) => dep !== deps[index]);
 

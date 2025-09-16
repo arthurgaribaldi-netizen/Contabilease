@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary IFRS 16 contract form components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -10,7 +10,12 @@
 'use client';
 
 import { IFRS16CalculationEngine } from '@/lib/calculations/ifrs16-engine';
-import { IFRS16CalculationResult, IFRS16LeaseFormData, ifrs16LeaseSchema } from '@/lib/schemas/ifrs16-lease';
+import { logger } from '@/lib/logger';
+import {
+  IFRS16CalculationResult,
+  IFRS16LeaseFormData,
+  ifrs16LeaseSchema,
+} from '@/lib/schemas/ifrs16-lease';
 import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import AmortizationScheduleTable from './AmortizationScheduleTable';
@@ -131,7 +136,14 @@ export default function IFRS16ContractForm({
       // Store full calculation result for amortization table
       setFullCalculationResult(results);
     } catch (error) {
-      console.error('Calculation error:', error);
+      logger.error(
+        'Calculation error:',
+        {
+          component: 'ifrs16contractform',
+          operation: 'calculateValues',
+        },
+        error as Error
+      );
       setCalculationPreview({
         lease_liability_initial: 0,
         right_of_use_asset_initial: 0,
@@ -168,7 +180,14 @@ export default function IFRS16ContractForm({
         });
         setErrors(newErrors);
       } else {
-        console.error('Error submitting form:', error);
+        logger.error(
+          'Error submitting form:',
+          {
+            component: 'ifrs16contractform',
+            operation: 'submitForm',
+          },
+          error as Error
+        );
       }
     }
   };

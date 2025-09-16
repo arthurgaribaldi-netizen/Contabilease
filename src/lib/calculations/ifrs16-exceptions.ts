@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -17,6 +17,7 @@
  */
 
 // import { IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
+import { CONTRACT_LIMITS, IFRS16_EXCEPTION_THRESHOLDS } from '@/lib/constants/validation-limits';
 import { IFRS16CompleteData } from '@/lib/schemas/ifrs16-complete';
 
 export interface ShortTermLeaseCriteria {
@@ -69,17 +70,7 @@ export class IFRS16ExceptionsEngine {
   private contractData: IFRS16CompleteData;
 
   // Low-value asset thresholds by currency (in local currency units)
-  private static readonly LOW_VALUE_THRESHOLDS = {
-    BRL: 5000, // R$ 5,000
-    USD: 1000, // $1,000
-    EUR: 1000, // €1,000
-    GBP: 1000, // £1,000
-    JPY: 100000, // ¥100,000
-    CAD: 1000, // C$1,000
-    AUD: 1000, // A$1,000
-    CHF: 1000, // CHF 1,000
-    DEFAULT: 1000, // Default threshold
-  };
+  private static readonly LOW_VALUE_THRESHOLDS = IFRS16_EXCEPTION_THRESHOLDS.LOW_VALUE_THRESHOLDS;
 
   constructor(contractData: IFRS16CompleteData) {
     this.contractData = contractData;
@@ -97,8 +88,11 @@ export class IFRS16ExceptionsEngine {
     // 1. Lease term ≤ 12 months
     // 2. No purchase option
     // 3. Low probability of renewal
-    const isShortTerm = leaseTermMonths <= 12;
-    const meetsCriteria = isShortTerm && !hasPurchaseOption && renewalProbability < 50;
+    const isShortTerm = leaseTermMonths <= IFRS16_EXCEPTION_THRESHOLDS.SHORT_TERM_MAX_MONTHS;
+    const meetsCriteria =
+      isShortTerm &&
+      !hasPurchaseOption &&
+      renewalProbability < CONTRACT_LIMITS.RENEWAL_PROBABILITY_THRESHOLD;
 
     return {
       lease_term_months: leaseTermMonths,

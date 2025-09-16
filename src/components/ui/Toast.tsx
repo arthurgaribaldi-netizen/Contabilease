@@ -1,11 +1,11 @@
 'use client';
 
 import {
-    CheckCircleIcon,
-    ExclamationTriangleIcon,
-    InformationCircleIcon,
-    XCircleIcon,
-    XMarkIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  XCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -52,6 +52,7 @@ function ToastComponent({ toast, onRemove }: ToastProps) {
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [toast.id, toast.duration, toast.persistent, toast.type, onRemove]);
 
   const getIcon = () => {

@@ -6,6 +6,7 @@ import Breadcrumbs, { BreadcrumbItem } from '@/components/ui/Breadcrumbs';
 import { LoadingButton } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/Toast';
 import { Contract } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { ContractFormData } from '@/lib/schemas/contract';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
@@ -64,7 +65,14 @@ export default function ContractsPageClient({
       setContracts(prev => prev.filter(c => c.id !== contract.id));
       success('Contrato excluído', 'O contrato foi excluído com sucesso');
     } catch (err) {
-      console.error('Error deleting contract:', err);
+      logger.error(
+        'Error deleting contract:',
+        {
+          component: 'contractspageclient',
+          operation: 'deleteContract',
+        },
+        err as Error
+      );
       const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir contrato';
       setError(errorMessage);
       showError('Erro ao excluir', errorMessage);
@@ -110,7 +118,14 @@ export default function ContractsPageClient({
         editingContract ? 'Contrato atualizado com sucesso' : 'Novo contrato criado com sucesso'
       );
     } catch (err) {
-      console.error('Error submitting contract:', err);
+      logger.error(
+        'Error submitting contract:',
+        {
+          component: 'contractspageclient',
+          operation: 'submitContract',
+        },
+        err as Error
+      );
       const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar contrato';
       setError(errorMessage);
       showError('Erro ao salvar', errorMessage);

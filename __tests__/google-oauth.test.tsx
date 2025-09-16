@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
 import GoogleLoginButton from '../src/components/auth/GoogleLoginButton';
 import { supabase } from '../src/lib/supabase';
@@ -42,23 +42,23 @@ describe('GoogleLoginButton', () => {
   });
 
   it('renders login button correctly', () => {
-    render(<GoogleLoginButton mode="login" />);
-    
-    expect(screen.getByText('Entrar com Google')).toBeInTheDocument();
+    render(<GoogleLoginButton />);
+
+    expect(screen.getByText('Continuar com Google')).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
   it('renders register button correctly', () => {
-    render(<GoogleLoginButton mode="register" />);
-    
-    expect(screen.getByText('Cadastrar com Google')).toBeInTheDocument();
+    render(<GoogleLoginButton />);
+
+    expect(screen.getByText('Continuar com Google')).toBeInTheDocument();
   });
 
   it('calls Supabase signInWithOAuth when clicked', async () => {
     mockSignInWithOAuth.mockResolvedValue({ error: null });
-    
-    render(<GoogleLoginButton mode="login" />);
-    
+
+    render(<GoogleLoginButton />);
+
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
@@ -67,10 +67,6 @@ describe('GoogleLoginButton', () => {
         provider: 'google',
         options: {
           redirectTo: expect.stringContaining('/auth/callback'),
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
         },
       });
     });
@@ -78,38 +74,36 @@ describe('GoogleLoginButton', () => {
 
   it('shows loading state when clicked', async () => {
     mockSignInWithOAuth.mockImplementation(() => new Promise(() => {})); // Never resolves
-    
-    render(<GoogleLoginButton mode="login" />);
-    
+
+    render(<GoogleLoginButton />);
+
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText('Carregando...')).toBeInTheDocument();
+      expect(screen.getByText('Conectando...')).toBeInTheDocument();
     });
   });
 
   it('handles OAuth error gracefully', async () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const mockOnError = jest.fn();
     mockSignInWithOAuth.mockRejectedValue(new Error('OAuth failed'));
-    
-    render(<GoogleLoginButton mode="login" />);
-    
+
+    render(<GoogleLoginButton onError={mockOnError} />);
+
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Google login failed:', expect.any(Error));
+      expect(mockOnError).toHaveBeenCalledWith('OAuth failed');
     });
-
-    consoleErrorSpy.mockRestore();
   });
 
   it('is disabled when loading', async () => {
     mockSignInWithOAuth.mockImplementation(() => new Promise(() => {})); // Never resolves
-    
-    render(<GoogleLoginButton mode="login" />);
-    
+
+    render(<GoogleLoginButton />);
+
     const button = screen.getByRole('button');
     fireEvent.click(button);
 

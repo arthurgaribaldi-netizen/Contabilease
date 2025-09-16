@@ -4,18 +4,28 @@
 
 Este diretório contém os scripts de migração do Supabase para o projeto Contabilease. Os scripts foram auditados e otimizados para garantir segurança, performance e integridade dos dados.
 
-## Ordem de Execução
+## ⚠️ ORDEM DE EXECUÇÃO CORRIGIDA
 
-Execute os scripts na seguinte ordem:
+**IMPORTANTE**: Execute os scripts na seguinte ordem para evitar erros:
 
 1. **000_base_migration.sql** - Extensões e funções base
 2. **001_core_tables_consolidated.sql** - Tabelas principais
-3. **002_rls_policies_optimized.sql** - Políticas RLS
-4. **003_initial_data_and_validations.sql** - Dados iniciais e validações
-5. **004_security_improvements_safe.sql** - Melhorias de segurança
-6. **005_security_tables_creation.sql** - Tabelas de segurança
+3. **005_security_tables_creation.sql** - Tabelas de segurança (MOVIDO)
+4. **002_rls_policies_optimized.sql** - Políticas RLS (MOVIDO)
+5. **003_initial_data_and_validations.sql** - Dados iniciais e validações (MOVIDO)
+6. **004_security_improvements_safe.sql** - Melhorias de segurança
 7. **006_final_validation.sql** - Validação final do sistema
 8. **007_performance_and_security_optimizations.sql** - Otimizações de performance
+9. **008_critical_fixes.sql** - Correções críticas (NOVO)
+
+## 🔧 CORREÇÕES APLICADAS
+
+### Problemas Identificados e Corrigidos:
+- ✅ **Dependências circulares**: Reorganizada ordem de execução
+- ✅ **Queries destrutivas**: Adicionado LIMIT e verificações de segurança
+- ✅ **Erros de sintaxe**: Corrigidos CASTs inválidos e referências
+- ✅ **Índices problemáticos**: Adicionadas verificações de existência
+- ✅ **Políticas RLS**: Corrigidas referências a tabelas inexistentes
 
 ## Melhorias Implementadas
 
@@ -112,21 +122,70 @@ SELECT * FROM security_dashboard LIMIT 7;
 SELECT * FROM pg_stat_user_indexes WHERE schemaname = 'public';
 ```
 
-## Troubleshooting
+## 🚨 TROUBLESHOOTING
 
-### Problemas Comuns
+### Problemas Comuns e Soluções
 
 1. **Migração falha por dependência**
-   - Verifique se todas as migrações anteriores foram executadas
-   - Execute na ordem correta
+   ```sql
+   -- Execute primeiro o validador
+   \i supabase/migrations/validate_migrations.sql
+   
+   -- Se houver erros, execute as correções
+   \i supabase/migrations/008_critical_fixes.sql
+   ```
 
 2. **Performance lenta**
-   - Verifique se os índices foram criados com CONCURRENTLY
-   - Execute ANALYZE nas tabelas principais
+   ```sql
+   -- Verificar índices
+   SELECT * FROM pg_stat_user_indexes WHERE schemaname = 'public';
+   
+   -- Executar ANALYZE
+   ANALYZE contracts, profiles, security_logs;
+   ```
 
 3. **Erro de permissão**
-   - Verifique se o usuário tem role 'service_role' para operações administrativas
-   - Confirme se as políticas RLS estão corretas
+   ```sql
+   -- Verificar role atual
+   SELECT current_role;
+   
+   -- Verificar políticas RLS
+   SELECT * FROM pg_policies WHERE schemaname = 'public';
+   ```
+
+4. **Queries destrutivas bloqueadas**
+   ```sql
+   -- Usar função segura de limpeza
+   SELECT safe_cleanup_security_logs();
+   ```
+
+### ⚡ SOLUÇÃO RÁPIDA PARA ERROS
+
+Se você está enfrentando erros ao executar as migrações:
+
+1. **Execute o validador primeiro**:
+   ```bash
+   psql -h your-host -U your-user -d your-db -f supabase/migrations/validate_migrations.sql
+   ```
+
+2. **Se houver erros críticos, execute as correções**:
+   ```bash
+   psql -h your-host -U your-user -d your-db -f supabase/migrations/008_critical_fixes.sql
+   ```
+
+3. **Execute as migrações na ordem correta**:
+   ```bash
+   # Ordem corrigida
+   psql -f 000_base_migration.sql
+   psql -f 001_core_tables_consolidated.sql
+   psql -f 005_security_tables_creation.sql
+   psql -f 002_rls_policies_optimized.sql
+   psql -f 003_initial_data_and_validations.sql
+   psql -f 004_security_improvements_safe.sql
+   psql -f 006_final_validation.sql
+   psql -f 007_performance_and_security_optimizations.sql
+   psql -f 008_critical_fixes.sql
+   ```
 
 ### Logs de Debug
 ```sql

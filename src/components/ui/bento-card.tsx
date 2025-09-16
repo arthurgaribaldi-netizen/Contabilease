@@ -2,7 +2,8 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import * as React from 'react';
 
-interface BentoCardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface BentoCardProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   span?: 1 | 2 | 3 | 4 | 6 | 8 | 12;
   interactive?: boolean;
   animated?: boolean;
@@ -30,7 +31,7 @@ const BentoCard = React.forwardRef<HTMLDivElement, BentoCardProps>(
           animate: { opacity: 1, scale: 1 },
           transition: {
             duration: 0.4,
-            ease: 'easeOut',
+            ease: 'easeOut' as const,
             delay: Math.random() * 0.2, // Stagger animation
           },
           whileHover: interactive
@@ -52,6 +53,9 @@ const BentoCard = React.forwardRef<HTMLDivElement, BentoCardProps>(
       12: 'col-span-12',
     };
 
+    // Separate HTML props from motion props to avoid conflicts
+    const { onDrag, onDragStart, onDragEnd, ...htmlProps } = props as any;
+
     return (
       <Comp
         ref={ref}
@@ -64,7 +68,7 @@ const BentoCard = React.forwardRef<HTMLDivElement, BentoCardProps>(
           className
         )}
         {...motionProps}
-        {...props}
+        {...htmlProps}
       >
         {children}
       </Comp>

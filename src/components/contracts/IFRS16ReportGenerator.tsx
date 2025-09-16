@@ -2,13 +2,14 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 'use client';
 
+import { logger } from '@/lib/logger';
 import {
   ReportConfiguration,
   ReportData,
@@ -68,7 +69,14 @@ export default function IFRS16ReportGenerator({
         await generateExcelReport(generator, reportData);
       }
     } catch (error) {
-      console.error('Error generating report:', error);
+      logger.error(
+        'Error generating report:',
+        {
+          component: 'ifrs16reportgenerator',
+          operation: 'generateReport',
+        },
+        error as Error
+      );
       alert('Erro ao gerar relatório. Tente novamente.');
     } finally {
       setLoading(false);
@@ -93,7 +101,14 @@ export default function IFRS16ReportGenerator({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      logger.error(
+        'Error generating PDF:',
+        {
+          component: 'ifrs16reportgenerator',
+          operation: 'generatePDF',
+        },
+        error as Error
+      );
       throw error;
     }
   };
@@ -118,7 +133,14 @@ export default function IFRS16ReportGenerator({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error generating Excel:', error);
+      logger.error(
+        'Error generating Excel:',
+        {
+          component: 'ifrs16reportgenerator',
+          operation: 'generateExcel',
+        },
+        error as Error
+      );
       throw error;
     }
   };

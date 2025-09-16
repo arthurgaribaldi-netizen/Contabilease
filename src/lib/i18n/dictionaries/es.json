@@ -39,7 +39,27 @@
     "loginError": "Error al iniciar sesión",
     "registerSuccess": "Registro exitoso",
     "registerError": "Error al registrarse",
-    "logoutSuccess": "Cierre de sesión exitoso"
+    "logoutSuccess": "Cierre de sesión exitoso",
+    "magicLink": {
+      "title": "Inicio de Sesión con Enlace Mágico",
+      "subtitle": "Ingresa tu email y recibirás un enlace para iniciar sesión sin contraseña",
+      "emailPlaceholder": "tu@email.com",
+      "sendButton": "Enviar Enlace Mágico",
+      "sending": "Enviando...",
+      "successTitle": "¡Enlace Enviado!",
+      "successMessage": "Revisa tu email y haz clic en el enlace para iniciar sesión",
+      "emailSentTo": "Enviamos un enlace de inicio de sesión a",
+      "nextSteps": "Próximos pasos:",
+      "step1": "Revisa tu bandeja de entrada",
+      "step2": "Haz clic en el enlace enviado",
+      "step3": "Serás redirigido automáticamente",
+      "tryAnotherEmail": "Probar otro email",
+      "howItWorks": "Cómo funciona:",
+      "howItWorksDescription": "Enviamos un enlace seguro a tu email. Haz clic en él y serás iniciado automáticamente, sin necesidad de contraseña.",
+      "invalidEmail": "Por favor, ingresa un email válido",
+      "sendError": "Error al enviar enlace mágico",
+      "unexpectedError": "Error inesperado al enviar enlace mágico"
+    }
   },
   "dashboard": {
     "welcome": "Bienvenido a Contabilease",
@@ -110,7 +130,15 @@
     "statusCompleted": "Completado",
     "statusCancelled": "Cancelado",
     "viewDetails": "Ver Detalles",
-    "calculateIFRS": "Calcular IFRS 16"
+    "calculateIFRS": "Calcular IFRS 16",
+    "validation": {
+      "valueMustBePositive": "El valor debe ser mayor que cero",
+      "termMustBeValid": "El plazo debe estar entre 1 y 600 meses",
+      "rateMustBeValid": "La tasa debe estar entre 0% y 100%"
+    },
+    "wizard": {
+      "cancelCreation": "Cancelar creación del contrato"
+    }
   },
   "errors": {
     "pageNotFound": "Página no encontrada",

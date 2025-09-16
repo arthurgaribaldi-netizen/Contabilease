@@ -11,12 +11,12 @@ interface MicroFeedbackProps {
   className?: string;
 }
 
-export function MicroFeedback({ 
-  children, 
-  onClick, 
-  disabled = false, 
+export function MicroFeedback({
+  children,
+  onClick,
+  disabled = false,
   variant = 'default',
-  className = '' 
+  className = '',
 }: MicroFeedbackProps) {
   const getVariantProps = () => {
     switch (variant) {
@@ -24,25 +24,25 @@ export function MicroFeedback({
         return {
           whileHover: { scale: 1.01 },
           whileTap: { scale: 0.99 },
-          transition: { duration: 0.1 }
+          transition: { duration: 0.1 },
         };
       case 'strong':
         return {
-          whileHover: { 
+          whileHover: {
             scale: 1.05,
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)'
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
           },
-          whileTap: { 
+          whileTap: {
             scale: 0.95,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
           },
-          transition: { type: 'spring', stiffness: 400, damping: 17 }
+          transition: { type: 'spring', stiffness: 400, damping: 17 },
         };
       default:
         return {
           whileHover: { scale: 1.02 },
           whileTap: { scale: 0.98 },
-          transition: { type: 'spring', stiffness: 300, damping: 20 }
+          transition: { type: 'spring', stiffness: 300, damping: 20 },
         };
     }
   };
@@ -51,11 +51,10 @@ export function MicroFeedback({
     <motion.div
       className={`cursor-pointer ${className}`}
       onClick={disabled ? undefined : onClick}
-      disabled={disabled}
       {...getVariantProps()}
-      style={{ 
+      style={{
         opacity: disabled ? 0.6 : 1,
-        cursor: disabled ? 'not-allowed' : 'pointer'
+        cursor: disabled ? 'not-allowed' : 'pointer',
       }}
     >
       {children}
@@ -76,46 +75,43 @@ export function RippleEffect({ children, onClick, className = '' }: RippleEffect
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const newRipple = {
       id: Date.now(),
       x,
       y,
     };
-    
+
     setRipples(prev => [...prev, newRipple]);
-    
+
     // Remove ripple after animation
     setTimeout(() => {
       setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
     }, 600);
-    
+
     onClick?.();
   };
 
   return (
-    <div
-      className={`relative overflow-hidden ${className}`}
-      onClick={handleClick}
-    >
+    <div className={`relative overflow-hidden ${className}`} onClick={handleClick}>
       {children}
       {ripples.map(ripple => (
         <motion.div
           key={ripple.id}
-          className="absolute bg-white bg-opacity-30 rounded-full pointer-events-none"
-          initial={{ 
-            x: ripple.x - 10, 
-            y: ripple.y - 10, 
-            width: 20, 
+          className='absolute bg-white bg-opacity-30 rounded-full pointer-events-none'
+          initial={{
+            x: ripple.x - 10,
+            y: ripple.y - 10,
+            width: 20,
             height: 20,
-            opacity: 1 
+            opacity: 1,
           }}
-          animate={{ 
-            x: ripple.x - 50, 
-            y: ripple.y - 50, 
-            width: 100, 
+          animate={{
+            x: ripple.x - 50,
+            y: ripple.y - 50,
+            width: 100,
             height: 100,
-            opacity: 0 
+            opacity: 0,
           }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
         />
@@ -134,18 +130,22 @@ export function PulseEffect({ children, isActive = false, className = '' }: Puls
   return (
     <motion.div
       className={className}
-      animate={isActive ? {
-        scale: [1, 1.05, 1],
-        boxShadow: [
-          '0 0 0 0 rgba(59, 130, 246, 0.7)',
-          '0 0 0 10px rgba(59, 130, 246, 0)',
-          '0 0 0 0 rgba(59, 130, 246, 0)'
-        ]
-      } : {}}
-      transition={{ 
-        duration: 1.5, 
+      animate={
+        isActive
+          ? {
+              scale: [1, 1.05, 1],
+              boxShadow: [
+                '0 0 0 0 rgba(59, 130, 246, 0.7)',
+                '0 0 0 10px rgba(59, 130, 246, 0)',
+                '0 0 0 0 rgba(59, 130, 246, 0)',
+              ],
+            }
+          : {}
+      }
+      transition={{
+        duration: 1.5,
         repeat: isActive ? Infinity : 0,
-        ease: 'easeInOut'
+        ease: 'easeInOut',
       }}
     >
       {children}
@@ -163,12 +163,16 @@ export function ShakeEffect({ children, isShaking = false, className = '' }: Sha
   return (
     <motion.div
       className={className}
-      animate={isShaking ? {
-        x: [0, -10, 10, -10, 10, -5, 5, 0]
-      } : {}}
-      transition={{ 
+      animate={
+        isShaking
+          ? {
+              x: [0, -10, 10, -10, 10, -5, 5, 0],
+            }
+          : {}
+      }
+      transition={{
         duration: 0.5,
-        ease: 'easeInOut'
+        ease: 'easeInOut',
       }}
     >
       {children}
@@ -186,13 +190,17 @@ export function BounceEffect({ children, isBouncing = false, className = '' }: B
   return (
     <motion.div
       className={className}
-      animate={isBouncing ? {
-        y: [0, -20, 0],
-        scale: [1, 1.1, 1]
-      } : {}}
-      transition={{ 
+      animate={
+        isBouncing
+          ? {
+              y: [0, -20, 0],
+              scale: [1, 1.1, 1],
+            }
+          : {}
+      }
+      transition={{
         duration: 0.6,
-        ease: 'easeOut'
+        ease: 'easeOut',
       }}
     >
       {children}

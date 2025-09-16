@@ -39,7 +39,27 @@
     "loginError": "Login error",
     "registerSuccess": "Registration successful",
     "registerError": "Registration error",
-    "logoutSuccess": "Logout successful"
+    "logoutSuccess": "Logout successful",
+    "magicLink": {
+      "title": "Magic Link Login",
+      "subtitle": "Enter your email and you'll receive a link to login without a password",
+      "emailPlaceholder": "your@email.com",
+      "sendButton": "Send Magic Link",
+      "sending": "Sending...",
+      "successTitle": "Link Sent!",
+      "successMessage": "Check your email and click the link to login",
+      "emailSentTo": "We sent a login link to",
+      "nextSteps": "Next steps:",
+      "step1": "Check your inbox",
+      "step2": "Click the sent link",
+      "step3": "You will be redirected automatically",
+      "tryAnotherEmail": "Try another email",
+      "howItWorks": "How it works:",
+      "howItWorksDescription": "We send a secure link to your email. Click it and you'll be logged in automatically, without needing a password.",
+      "invalidEmail": "Please enter a valid email",
+      "sendError": "Error sending magic link",
+      "unexpectedError": "Unexpected error sending magic link"
+    }
   },
   "dashboard": {
     "welcome": "Welcome to Contabilease",
@@ -110,7 +130,15 @@
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled",
     "viewDetails": "View Details",
-    "calculateIFRS": "Calculate IFRS 16"
+    "calculateIFRS": "Calculate IFRS 16",
+    "validation": {
+      "valueMustBePositive": "Value must be greater than zero",
+      "termMustBeValid": "Term must be between 1 and 600 months",
+      "rateMustBeValid": "Rate must be between 0% and 100%"
+    },
+    "wizard": {
+      "cancelCreation": "Cancel contract creation"
+    }
   },
   "errors": {
     "pageNotFound": "Page not found",

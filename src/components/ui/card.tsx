@@ -4,7 +4,7 @@ import * as React from 'react';
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
+  Omit<React.HTMLAttributes<HTMLDivElement>, 'onDrag' | 'onDragStart' | 'onDragEnd'> & {
     interactive?: boolean;
     animated?: boolean;
   }
@@ -15,10 +15,13 @@ const Card = React.forwardRef<
     ? {
         initial: { opacity: 0, y: 20 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.3, ease: 'easeOut' },
+        transition: { duration: 0.3, ease: 'easeOut' as const },
         whileHover: interactive ? { y: -2, transition: { duration: 0.2 } } : undefined,
       }
     : {};
+
+  // Separate HTML props from motion props to avoid conflicts
+  const { onDrag, onDragStart, onDragEnd, ...htmlProps } = props as any;
 
   return (
     <Comp
@@ -29,7 +32,7 @@ const Card = React.forwardRef<
         className
       )}
       {...motionProps}
-      {...props}
+      {...htmlProps}
     />
   );
 });
@@ -37,7 +40,11 @@ Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('contabilease-card-header flex flex-col space-y-1.5 p-6', className)} {...props} />
+    <div
+      ref={ref}
+      className={cn('contabilease-card-header flex flex-col space-y-1.5 p-6', className)}
+      {...props}
+    />
   )
 );
 CardHeader.displayName = 'CardHeader';
@@ -46,7 +53,10 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('contabilease-card-title contabilease-heading text-2xl font-semibold leading-none tracking-tight', className)}
+      className={cn(
+        'contabilease-card-title contabilease-heading text-2xl font-semibold leading-none tracking-tight',
+        className
+      )}
       {...props}
     />
   )
@@ -57,7 +67,14 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn('contabilease-card-description contabilease-paragraph text-sm text-muted-foreground', className)} {...props} />
+  <p
+    ref={ref}
+    className={cn(
+      'contabilease-card-description contabilease-paragraph text-sm text-muted-foreground',
+      className
+    )}
+    {...props}
+  />
 ));
 CardDescription.displayName = 'CardDescription';
 
@@ -70,10 +87,13 @@ CardContent.displayName = 'CardContent';
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('contabilease-card-footer flex items-center p-6 pt-0', className)} {...props} />
+    <div
+      ref={ref}
+      className={cn('contabilease-card-footer flex items-center p-6 pt-0', className)}
+      {...props}
+    />
   )
 );
 CardFooter.displayName = 'CardFooter';
 
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
-

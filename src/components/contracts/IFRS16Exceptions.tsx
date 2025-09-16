@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -10,6 +10,7 @@
 'use client';
 
 import { ExceptionAnalysis, IFRS16ExceptionsEngine } from '@/lib/calculations/ifrs16-exceptions';
+import { logger } from '@/lib/logger';
 import { IFRS16CompleteData } from '@/lib/schemas/ifrs16-complete';
 import { useEffect, useState } from 'react';
 
@@ -37,7 +38,14 @@ export default function IFRS16Exceptions({
         setExceptionAnalysis(analysis);
         setValidation(validationResult);
       } catch (error) {
-        console.error('Error analyzing exceptions:', error);
+        logger.error(
+          'Error analyzing exceptions:',
+          {
+            component: 'ifrs16exceptions',
+            operation: 'analyzeExceptions',
+          },
+          error as Error
+        );
       } finally {
         setLoading(false);
       }

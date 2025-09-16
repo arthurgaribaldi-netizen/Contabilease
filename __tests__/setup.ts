@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -30,6 +30,23 @@ jest.mock('next/navigation', () => ({
     get: jest.fn(),
   }),
   usePathname: () => '/',
+}));
+
+// Mock next-intl for components that don't use TestI18nProvider
+jest.mock('next-intl', () => ({
+  useTranslations: (namespace: string) => (key: string) => {
+    // Load actual translations for fallback
+    const ptBR = require('@/lib/i18n/dictionaries/pt-BR.json');
+    const keys = `${namespace}.${key}`.split('.');
+
+    let value: any = ptBR;
+    for (const k of keys) {
+      value = value?.[k];
+    }
+
+    return value || key;
+  },
+  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Mock Supabase
@@ -98,11 +115,13 @@ jest.mock('stripe', () => {
 
 // Mock @stripe/stripe-js
 jest.mock('@stripe/stripe-js', () => ({
-  loadStripe: jest.fn(() => Promise.resolve({
-    redirectToCheckout: jest.fn(),
-    confirmPayment: jest.fn(),
-    confirmSetupIntent: jest.fn(),
-  })),
+  loadStripe: jest.fn(() =>
+    Promise.resolve({
+      redirectToCheckout: jest.fn(),
+      confirmPayment: jest.fn(),
+      confirmSetupIntent: jest.fn(),
+    })
+  ),
 }));
 
 // Global test setup
@@ -119,8 +138,7 @@ beforeAll(() => {
   console.warn = (...args) => {
     if (
       typeof args[0] === 'string' &&
-      (args[0].includes('React does not recognize') ||
-       args[0].includes('Warning:'))
+      (args[0].includes('React does not recognize') || args[0].includes('Warning:'))
     ) {
       return;
     }
@@ -130,8 +148,7 @@ beforeAll(() => {
   console.error = (...args) => {
     if (
       typeof args[0] === 'string' &&
-      (args[0].includes('React does not recognize') ||
-       args[0].includes('Warning:'))
+      (args[0].includes('React does not recognize') || args[0].includes('Warning:'))
     ) {
       return;
     }

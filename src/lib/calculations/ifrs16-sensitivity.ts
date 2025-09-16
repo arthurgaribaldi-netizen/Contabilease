@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -18,6 +18,7 @@
  * - Monte Carlo simulations
  */
 
+import { SENSITIVITY_CONSTANTS } from '@/lib/constants/validation-limits';
 import { IFRS16CompleteData } from '@/lib/schemas/ifrs16-complete';
 import { IFRS16CalculationResult, IFRS16LeaseFormData } from '@/lib/schemas/ifrs16-lease';
 import { IFRS16CalculationEngine } from './ifrs16-engine';
@@ -414,10 +415,10 @@ export class IFRS16SensitivityEngine {
       scenario_name: 'Rescisão Antecipada',
       scenario_type: 'early_termination',
       description: 'Rescisão do contrato 12 meses antes do prazo original',
-      probability: 5,
+      probability: SENSITIVITY_CONSTANTS.EARLY_TERMINATION_PROBABILITY,
       severity: 'high',
       parameters: {
-        term_reduction_months: -12,
+        term_reduction_months: -SENSITIVITY_CONSTANTS.EARLY_TERMINATION_MONTHS,
       },
       impact: {
         lease_liability_change: liabilityChange,
@@ -429,7 +430,8 @@ export class IFRS16SensitivityEngine {
   }
 
   private createMarketCrashScenario(baseCalculation: IFRS16CalculationResult): StressScenario {
-    const crashRate = this.contractData.discount_rate_annual + 5; // +5 percentage points
+    const crashRate =
+      this.contractData.discount_rate_annual + SENSITIVITY_CONSTANTS.MARKET_CRASH_RATE_INCREASE; // +5 percentage points
     const modifiedData = { ...this.contractData, discount_rate_annual: crashRate };
     const modifiedEngine = new IFRS16CalculationEngine(this.convertToLeaseFormData(modifiedData));
     const modifiedCalculation = modifiedEngine.calculateAll();
@@ -443,7 +445,7 @@ export class IFRS16SensitivityEngine {
       scenario_name: 'Crise de Mercado',
       scenario_type: 'market_crash',
       description: 'Crise econômica com aumento de 5 pontos percentuais na taxa de desconto',
-      probability: 3,
+      probability: SENSITIVITY_CONSTANTS.MARKET_CRASH_PROBABILITY,
       severity: 'extreme',
       parameters: {
         discount_rate_change: 5,

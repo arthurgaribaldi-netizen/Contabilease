@@ -1,25 +1,40 @@
 import { supabase } from '../src/lib/supabase';
-import { canCreateContract, requirePaidSubscription, validateUserPayment } from '../src/middleware/payment-validation';
+import {
+  canCreateContract,
+  requirePaidSubscription,
+  validateUserPayment,
+} from '../src/middleware/payment-validation';
 
 // Mock do Supabase
 jest.mock('../src/lib/supabase', () => ({
   supabase: {
-    rpc: jest.fn(),
     from: jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          single: jest.fn()
-        }))
-      }))
-    }))
-  }
+          eq: jest.fn(() => ({
+            single: jest.fn(),
+          })),
+          single: jest.fn(),
+        })),
+      })),
+    })),
+  },
 }));
 
 // Mock do logger
 jest.mock('../src/lib/logger', () => ({
   logger: {
-    error: jest.fn()
-  }
+    error: jest.fn(),
+  },
+}));
+
+// Mock do Stripe plans
+jest.mock('../src/lib/stripe', () => ({
+  SUBSCRIPTION_PLANS: {
+    FREE: { maxContracts: 1 },
+    BASIC: { maxContracts: 5 },
+    PREMIUM: { maxContracts: 50 },
+  },
 }));
 
 describe('Payment Validation', () => {
@@ -31,97 +46,141 @@ describe('Payment Validation', () => {
 
   describe('validateUserPayment', () => {
     it('should allow access for free plan users', async () => {
-      // Mock para plano gratuito
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: 'Gratuito',
-          max_contracts: 1,
-          current_contracts: 0,
-          features: { basic_calculations: true }
-        }],
-        error: null
-      });
+      // Mock para usuário sem assinatura (plano gratuito)
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null, // No subscription
+          error: { code: 'PGRST116' },
+        }),
+      };
+
+      const mockContractsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({
+          data: [], // No contracts yet
+          error: null,
+        }),
+      };
+
+      // Mock multiple calls - validateUserPayment calls getUserSubscription and canCreateContract
+      (supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockQuery) // First call for subscription in getUserSubscription
+        .mockReturnValueOnce(mockQuery) // Second call for subscription in canCreateContract
+        .mockReturnValueOnce(mockContractsQuery); // Third call for contracts in canCreateContract
 
       const result = await validateUserPayment(mockUserId);
 
-      expect(result.hasAccess).toBe(true);
-      expect(result.subscriptionStatus).toBe('free');
-      expect(result.planName).toBe('Gratuito');
+      expect(result.isValid).toBe(false); // Free plan users don't have active subscription
+      expect(result.canCreateContract).toBe(true);
+      expect(result.requiresUpgrade).toBe(false);
     });
 
     it('should deny access for expired subscription', async () => {
       // Mock para assinatura expirada
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: 'Básico',
-          max_contracts: 5,
-          current_contracts: 2,
-          features: { advanced_calculations: true }
-        }],
-        error: null
-      });
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null, // No active subscription
+          error: { code: 'PGRST116' },
+        }),
+      };
 
-      (supabase.from as jest.Mock).mockReturnValue({
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            eq: jest.fn(() => ({
-              single: jest.fn().mockResolvedValue({
-                data: null,
-                error: { code: 'PGRST116' }
-              })
-            }))
-          }))
-        }))
-      });
+      const mockContractsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({
+          data: [{ id: 'contract-1' }, { id: 'contract-2' }], // 2 contracts (over free limit)
+          error: null,
+        }),
+      };
+
+      (supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockQuery) // First call for subscription
+        .mockReturnValueOnce(mockContractsQuery); // Second call for contracts
 
       const result = await validateUserPayment(mockUserId);
 
-      expect(result.hasAccess).toBe(false);
-      expect(result.reason).toBe('Assinatura não está ativa');
+      expect(result.isValid).toBe(false);
+      expect(result.canCreateContract).toBe(false);
+      expect(result.requiresUpgrade).toBe(true);
     });
 
     it('should deny access when contract limit is reached', async () => {
-      // Mock para limite atingido
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: 'Básico',
-          max_contracts: 5,
-          current_contracts: 5,
-          features: { advanced_calculations: true }
-        }],
-        error: null
-      });
+      // Mock para usuário sem assinatura com limite atingido
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null, // No subscription
+          error: { code: 'PGRST116' },
+        }),
+      };
+
+      const mockContractsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({
+          data: [{ id: 'contract-1' }], // 1 contract (at free limit)
+          error: null,
+        }),
+      };
+
+      (supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockQuery) // First call for subscription
+        .mockReturnValueOnce(mockContractsQuery); // Second call for contracts
 
       const result = await validateUserPayment(mockUserId);
 
-      expect(result.hasAccess).toBe(true);
-      expect(result.reason).toBe('Limite de contratos atingido');
+      expect(result.isValid).toBe(false);
+      expect(result.canCreateContract).toBe(false);
+      expect(result.requiresUpgrade).toBe(true);
     });
 
     it('should handle database errors gracefully', async () => {
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' }
-      });
+      // Mock para erro de banco de dados
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Database error' },
+        }),
+      };
+
+      (supabase.from as jest.Mock).mockReturnValue(mockQuery);
 
       const result = await validateUserPayment(mockUserId);
 
-      expect(result.hasAccess).toBe(false);
-      expect(result.reason).toBe('Erro ao verificar assinatura');
+      expect(result.isValid).toBe(false);
+      expect(result.canCreateContract).toBe(false);
+      expect(result.requiresUpgrade).toBe(true);
     });
   });
 
   describe('canCreateContract', () => {
     it('should allow contract creation when under limit', async () => {
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: 'Básico',
-          max_contracts: 5,
-          current_contracts: 3,
-          features: { advanced_calculations: true }
-        }],
-        error: null
-      });
+      // Mock para usuário sem assinatura (plano gratuito) com menos contratos que o limite
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null, // No subscription
+          error: { code: 'PGRST116' },
+        }),
+      };
+
+      const mockContractsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({
+          data: [], // No contracts yet (under free limit of 1)
+          error: null,
+        }),
+      };
+
+      (supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockQuery) // First call for subscription
+        .mockReturnValueOnce(mockContractsQuery); // Second call for contracts
 
       const result = await canCreateContract(mockUserId);
 
@@ -129,15 +188,27 @@ describe('Payment Validation', () => {
     });
 
     it('should deny contract creation when at limit', async () => {
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: 'Básico',
-          max_contracts: 5,
-          current_contracts: 5,
-          features: { advanced_calculations: true }
-        }],
-        error: null
-      });
+      // Mock para usuário sem assinatura com limite atingido
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null, // No subscription
+          error: { code: 'PGRST116' },
+        }),
+      };
+
+      const mockContractsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({
+          data: [{ id: 'contract-1' }], // 1 contract (at free limit)
+          error: null,
+        }),
+      };
+
+      (supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockQuery) // First call for subscription
+        .mockReturnValueOnce(mockContractsQuery); // Second call for contracts
 
       const result = await canCreateContract(mockUserId);
 
@@ -146,102 +217,94 @@ describe('Payment Validation', () => {
   });
 
   describe('requirePaidSubscription', () => {
-    it('should return null for valid paid subscription', async () => {
+    it('should return true for valid paid subscription', async () => {
       // Mock para assinatura paga ativa
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: 'Básico',
-          max_contracts: 5,
-          current_contracts: 2,
-          features: { advanced_calculations: true }
-        }],
-        error: null
-      });
-
       (supabase.from as jest.Mock).mockReturnValue({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
             eq: jest.fn(() => ({
               single: jest.fn().mockResolvedValue({
                 data: {
+                  plan: 'BASIC',
                   status: 'active',
-                  current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                  current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
                 },
-                error: null
-              })
-            }))
-          }))
-        }))
+                error: null,
+              }),
+            })),
+          })),
+        })),
       });
 
-      const mockRequest = {
-        url: 'http://localhost/api/contracts',
-        headers: new Map()
-      } as any;
-      const result = await requirePaidSubscription(mockRequest, mockUserId);
+      const result = await requirePaidSubscription(mockUserId);
 
-      expect(result).toBeNull();
+      expect(result).toBe(true);
     });
 
-    it('should return error response for inactive subscription', async () => {
+    it('should return false for inactive subscription', async () => {
       // Mock para assinatura inativa
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: 'Básico',
-          max_contracts: 5,
-          current_contracts: 2,
-          features: { advanced_calculations: true }
-        }],
-        error: null
-      });
-
       (supabase.from as jest.Mock).mockReturnValue({
         select: jest.fn(() => ({
           eq: jest.fn(() => ({
             eq: jest.fn(() => ({
               single: jest.fn().mockResolvedValue({
                 data: null,
-                error: { code: 'PGRST116' }
-              })
-            }))
-          }))
-        }))
+                error: { code: 'PGRST116' },
+              }),
+            })),
+          })),
+        })),
       });
 
-      const mockRequest = {
-        url: 'http://localhost/api/contracts',
-        headers: new Map()
-      } as any;
-      const result = await requirePaidSubscription(mockRequest, mockUserId);
+      const result = await requirePaidSubscription(mockUserId);
 
-      expect(result).not.toBeNull();
-      expect(result?.status).toBe(403);
+      expect(result).toBe(false);
     });
   });
 });
 
 describe('Subscription Limits Integration', () => {
+  const mockUserId = 'test-user-id';
+
   it('should enforce contract limits correctly', async () => {
     // Teste de integração com limites de contratos
     const testCases = [
-      { plan: 'Gratuito', maxContracts: 1, currentContracts: 0, expected: true },
-      { plan: 'Gratuito', maxContracts: 1, currentContracts: 1, expected: false },
-      { plan: 'Básico', maxContracts: 5, currentContracts: 4, expected: true },
-      { plan: 'Básico', maxContracts: 5, currentContracts: 5, expected: false },
-      { plan: 'Profissional', maxContracts: 20, currentContracts: 19, expected: true },
-      { plan: 'Profissional', maxContracts: 20, currentContracts: 20, expected: false }
+      { plan: 'FREE', maxContracts: 1, currentContracts: 0, expected: true },
+      { plan: 'FREE', maxContracts: 1, currentContracts: 1, expected: false },
+      { plan: 'BASIC', maxContracts: 5, currentContracts: 4, expected: true },
+      { plan: 'BASIC', maxContracts: 5, currentContracts: 5, expected: false },
     ];
 
     for (const testCase of testCases) {
-      (supabase.rpc as jest.Mock).mockResolvedValue({
-        data: [{
-          plan_name: testCase.plan,
-          max_contracts: testCase.maxContracts,
-          current_contracts: testCase.currentContracts,
-          features: {}
-        }],
-        error: null
-      });
+      // Mock subscription data
+      const mockSubscriptionQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data:
+            testCase.plan !== 'FREE'
+              ? {
+                  plan: testCase.plan,
+                  status: 'active',
+                  current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                }
+              : null,
+          error: testCase.plan === 'FREE' ? { code: 'PGRST116' } : null,
+        }),
+      };
+
+      // Mock contracts count
+      const mockContractsQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({
+          data: Array(testCase.currentContracts).fill({ id: 'contract-id' }),
+          error: null,
+        }),
+      };
+
+      (supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockSubscriptionQuery) // First call for subscription
+        .mockReturnValueOnce(mockContractsQuery); // Second call for contracts
 
       const result = await canCreateContract(mockUserId);
       expect(result).toBe(testCase.expected);

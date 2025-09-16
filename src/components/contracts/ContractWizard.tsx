@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -13,6 +13,7 @@ import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import { LoadingButton } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/Toast';
 import { Contract } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { contractSchema, type ContractFormData } from '@/lib/schemas/contract';
 import {
   CalendarDaysIcon,
@@ -216,7 +217,14 @@ export default function ContractWizard({
         setErrors(newErrors);
         error('Erro de validação', 'Verifique os dados informados');
       } else {
-        console.error('Error submitting form:', err);
+        logger.error(
+          'Error submitting form:',
+          {
+            component: 'contractwizard',
+            operation: 'submitForm',
+          },
+          err as Error
+        );
         error('Erro ao salvar', 'Não foi possível salvar o contrato. Tente novamente.');
       }
     }

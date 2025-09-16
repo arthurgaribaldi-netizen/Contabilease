@@ -73,12 +73,12 @@ describe('Stripe Integration', () => {
       expect(SUBSCRIPTION_PLANS.BASIC.maxContracts).toBe(25);
 
       expect(SUBSCRIPTION_PLANS.PROFESSIONAL.name).toBe('Profissional');
-      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.price).toBe(59);
+      expect(SUBSCRIPTION_PLANS.PROFESSIONAL.price).toBe(79);
       expect(SUBSCRIPTION_PLANS.PROFESSIONAL.maxContracts).toBe(100);
 
       expect(SUBSCRIPTION_PLANS.OFFICE.name).toBe('Escritório');
-      expect(SUBSCRIPTION_PLANS.OFFICE.price).toBe(99);
-      expect(SUBSCRIPTION_PLANS.OFFICE.maxContracts).toBe(100);
+      expect(SUBSCRIPTION_PLANS.OFFICE.price).toBe(199);
+      expect(SUBSCRIPTION_PLANS.OFFICE.maxContracts).toBe(500);
     });
 
     it('should have correct features for each plan', () => {
@@ -94,7 +94,7 @@ describe('Stripe Integration', () => {
 
       expect(SUBSCRIPTION_PLANS.OFFICE.features).toContain('api_access');
       expect(SUBSCRIPTION_PLANS.OFFICE.features).toContain('white_label');
-      expect(SUBSCRIPTION_PLANS.OFFICE.features).toContain('dedicated_support');
+      expect(SUBSCRIPTION_PLANS.OFFICE.features).toContain('priority_support');
     });
   });
 
@@ -189,11 +189,11 @@ describe('Stripe API Routes', () => {
 describe('Subscription Limits', () => {
   it('should enforce contract limits correctly', () => {
     const testCases = [
-      { plan: 'FREE', currentContracts: 0, maxContracts: 1, canCreate: true },
-      { plan: 'FREE', currentContracts: 1, maxContracts: 1, canCreate: false },
+      { plan: 'FREE', currentContracts: 0, maxContracts: 3, canCreate: true },
+      { plan: 'FREE', currentContracts: 3, maxContracts: 3, canCreate: false },
       { plan: 'BASIC', currentContracts: 4, maxContracts: 5, canCreate: true },
       { plan: 'BASIC', currentContracts: 5, maxContracts: 5, canCreate: false },
-      { plan: 'OFFICE', currentContracts: 99, maxContracts: 100, canCreate: true },
+      { plan: 'OFFICE', currentContracts: 499, maxContracts: 500, canCreate: true },
     ];
 
     testCases.forEach(({ currentContracts, maxContracts, canCreate }) => {

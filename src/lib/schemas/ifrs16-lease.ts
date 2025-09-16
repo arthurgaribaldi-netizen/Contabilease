@@ -2,11 +2,12 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary IFRS 16 schema definitions and validation rules.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
+import { CONTRACT_LIMITS } from '@/lib/constants/validation-limits';
 import { z } from 'zod';
 
 // Base lease contract schema for IFRS 16 calculations
@@ -14,44 +15,75 @@ export const ifrs16LeaseSchema = z.object({
   // Basic contract information
   title: z
     .string()
-    .min(1, 'Título é obrigatório')
-    .max(200, 'Título deve ter no máximo 200 caracteres')
+    .min(CONTRACT_LIMITS.TITLE_MIN_LENGTH, 'Título é obrigatório')
+    .max(CONTRACT_LIMITS.TITLE_MAX_LENGTH, 'Título deve ter no máximo 200 caracteres')
     .trim(),
   status: z.enum(['draft', 'active', 'completed', 'cancelled', 'modified']),
   currency_code: z
     .string()
-    .length(3, 'Código da moeda deve ter exatamente 3 caracteres')
+    .length(
+      CONTRACT_LIMITS.CURRENCY_CODE_LENGTH,
+      'Código da moeda deve ter exatamente 3 caracteres'
+    )
     .optional()
     .or(z.literal('')),
 
   // Lease terms and dates
-  lease_start_date: z.string().min(1, 'Data de início do contrato é obrigatória'),
-  lease_end_date: z.string().min(1, 'Data de fim do contrato é obrigatória'),
-  lease_term_months: z.number().int().min(1, 'Prazo do contrato deve ser pelo menos 1 mês'),
+  lease_start_date: z
+    .string()
+    .min(CONTRACT_LIMITS.TITLE_MIN_LENGTH, 'Data de início do contrato é obrigatória'),
+  lease_end_date: z
+    .string()
+    .min(CONTRACT_LIMITS.TITLE_MIN_LENGTH, 'Data de fim do contrato é obrigatória'),
+  lease_term_months: z
+    .number()
+    .int()
+    .min(CONTRACT_LIMITS.TERM_MIN_MONTHS, 'Prazo do contrato deve ser pelo menos 1 mês'),
 
   // Financial terms
-  initial_payment: z.number().min(0, 'Pagamento inicial não pode ser negativo').optional(),
-  monthly_payment: z.number().min(0, 'Pagamento mensal não pode ser negativo'),
-  annual_payment: z.number().min(0, 'Pagamento anual não pode ser negativo').optional(),
+  initial_payment: z
+    .number()
+    .min(CONTRACT_LIMITS.PAYMENT_MIN, 'Pagamento inicial não pode ser negativo')
+    .optional(),
+  monthly_payment: z
+    .number()
+    .min(CONTRACT_LIMITS.PAYMENT_MIN, 'Pagamento mensal não pode ser negativo'),
+  annual_payment: z
+    .number()
+    .min(CONTRACT_LIMITS.PAYMENT_MIN, 'Pagamento anual não pode ser negativo')
+    .optional(),
   payment_frequency: z.enum(['monthly', 'quarterly', 'semi-annual', 'annual']),
 
   // Discount rate and calculations
   discount_rate_annual: z
     .number()
-    .min(0, 'Taxa de desconto não pode ser negativa')
-    .max(100, 'Taxa de desconto não pode ser maior que 100%'),
-  discount_rate_monthly: z.number().min(0).max(100).optional(),
+    .min(CONTRACT_LIMITS.INTEREST_RATE_MIN, 'Taxa de desconto não pode ser negativa')
+    .max(CONTRACT_LIMITS.INTEREST_RATE_MAX, 'Taxa de desconto não pode ser maior que 100%'),
+  discount_rate_monthly: z
+    .number()
+    .min(CONTRACT_LIMITS.INTEREST_RATE_MIN)
+    .max(CONTRACT_LIMITS.INTEREST_RATE_MAX)
+    .optional(),
 
   // Asset information
-  asset_fair_value: z.number().min(0, 'Valor justo do ativo não pode ser negativo').optional(),
-  asset_residual_value: z.number().min(0, 'Valor residual não pode ser negativo').optional(),
+  asset_fair_value: z
+    .number()
+    .min(CONTRACT_LIMITS.PAYMENT_MIN, 'Valor justo do ativo não pode ser negativo')
+    .optional(),
+  asset_residual_value: z
+    .number()
+    .min(CONTRACT_LIMITS.PAYMENT_MIN, 'Valor residual não pode ser negativo')
+    .optional(),
 
   // Additional costs and fees
   initial_direct_costs: z
     .number()
-    .min(0, 'Custos diretos iniciais não podem ser negativos')
+    .min(CONTRACT_LIMITS.PAYMENT_MIN, 'Custos diretos iniciais não podem ser negativos')
     .optional(),
-  lease_incentives: z.number().min(0, 'Incentivos de leasing não podem ser negativos').optional(),
+  lease_incentives: z
+    .number()
+    .min(CONTRACT_LIMITS.PAYMENT_MIN, 'Incentivos de leasing não podem ser negativos')
+    .optional(),
 
   // Payment timing
   payment_timing: z.enum(['beginning', 'end']), // Beginning or end of period
@@ -60,31 +92,39 @@ export const ifrs16LeaseSchema = z.object({
   lease_classification: z.enum(['operating', 'finance']).optional(),
 
   // Optional fields for complex scenarios
-  escalation_rate: z.number().min(0).max(100).optional(), // Annual escalation rate
+  escalation_rate: z
+    .number()
+    .min(CONTRACT_LIMITS.INTEREST_RATE_MIN)
+    .max(CONTRACT_LIMITS.INTEREST_RATE_MAX)
+    .optional(), // Annual escalation rate
   variable_payments: z
     .array(
       z.object({
         date: z.string(),
-        amount: z.number().min(0),
+        amount: z.number().min(CONTRACT_LIMITS.PAYMENT_MIN),
         description: z.string().optional(),
       })
     )
     .optional(),
 
   // Guaranteed residual value
-  guaranteed_residual_value: z.number().min(0).optional(),
+  guaranteed_residual_value: z.number().min(CONTRACT_LIMITS.PAYMENT_MIN).optional(),
 
   // Purchase option
-  purchase_option_price: z.number().min(0).optional(),
+  purchase_option_price: z.number().min(CONTRACT_LIMITS.PAYMENT_MIN).optional(),
   purchase_option_exercisable: z.boolean().optional(),
 
   // Renewal options
   renewal_options: z
     .array(
       z.object({
-        term_months: z.number().int().min(1),
-        monthly_payment: z.number().min(0),
-        probability: z.number().min(0).max(100).optional(), // Probability of renewal
+        term_months: z.number().int().min(CONTRACT_LIMITS.TERM_MIN_MONTHS),
+        monthly_payment: z.number().min(CONTRACT_LIMITS.PAYMENT_MIN),
+        probability: z
+          .number()
+          .min(CONTRACT_LIMITS.INTEREST_RATE_MIN)
+          .max(CONTRACT_LIMITS.INTEREST_RATE_MAX)
+          .optional(), // Probability of renewal
       })
     )
     .optional(),

@@ -2,8 +2,10 @@
 
 import { cn } from '@/lib/utils';
 import { Box, OrbitControls, Text } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
-import { motion } from 'framer-motion';
+import { Canvas, useFrame } from '@react-three/fiber';
+import * as React from 'react';
+import { useRef } from 'react';
+import { Group } from 'three';
 
 interface DataPoint3D {
   x: number;
@@ -21,6 +23,42 @@ interface Chart3DProps {
   animated?: boolean;
 }
 
+function AnimatedGroup({
+  children,
+  position,
+  animated,
+  delay,
+}: {
+  children: React.ReactNode;
+  position: [number, number, number];
+  animated: boolean;
+  delay: number;
+}) {
+  const groupRef = useRef<Group>(null);
+  const [scale, setScale] = React.useState(animated ? 0 : 1);
+
+  React.useEffect(() => {
+    if (animated) {
+      const timer = setTimeout(() => {
+        setScale(1);
+      }, delay * 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [animated, delay]);
+
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.scale.setScalar(scale);
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={position}>
+      {children}
+    </group>
+  );
+}
+
 function ChartScene({ data, animated }: { data: DataPoint3D[]; animated: boolean }) {
   const maxValue = Math.max(...data.map(d => d.value));
   const normalizedData = data.map(d => ({
@@ -34,12 +72,11 @@ function ChartScene({ data, animated }: { data: DataPoint3D[]; animated: boolean
       <directionalLight position={[10, 10, 5]} intensity={1} />
 
       {normalizedData.map((point, index) => (
-        <motion.group
+        <AnimatedGroup
           key={index}
           position={[point.x, point.height / 2, point.z]}
-          initial={animated ? { scale: 0 } : { scale: 1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
+          animated={animated}
+          delay={index * 0.1}
         >
           <Box args={[0.8, point.height, 0.8]}>
             <meshStandardMaterial color={point.color || '#3b82f6'} transparent opacity={0.8} />
@@ -56,7 +93,7 @@ function ChartScene({ data, animated }: { data: DataPoint3D[]; animated: boolean
               {point.label}
             </Text>
           )}
-        </motion.group>
+        </AnimatedGroup>
       ))}
 
       <OrbitControls

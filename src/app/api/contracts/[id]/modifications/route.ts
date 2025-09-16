@@ -2,16 +2,17 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 import {
-    calculateModificationImpact,
-    createContractModification,
-    fetchContractModifications,
+  calculateModificationImpact,
+  createContractModification,
+  fetchContractModifications,
 } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { contractModificationSchema } from '@/lib/schemas/contract-modification';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -50,7 +51,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       try {
         impact = await calculateModificationImpact(contractId, validationResult.data);
       } catch (error) {
-        console.error('Error calculating impact:', error);
+        logger.error(
+          'Error calculating impact:',
+          {
+            component: 'route',
+            operation: 'calculateImpact',
+          },
+          error as Error
+        );
         // Don't fail the request if impact calculation fails
       }
     }
@@ -64,7 +72,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating modification:', error);
+    logger.error(
+      'Error creating modification:',
+      {
+        component: 'route',
+        operation: 'operation',
+      },
+      error as Error
+    );
 
     if (error instanceof Error) {
       if (error.message.includes('not found')) {
@@ -96,7 +111,14 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
       count: modifications.length,
     });
   } catch (error) {
-    console.error('Error fetching modifications:', error);
+    logger.error(
+      'Error fetching modifications:',
+      {
+        component: 'route',
+        operation: 'operation',
+      },
+      error as Error
+    );
 
     if (error instanceof Error && error.message.includes('not found')) {
       return NextResponse.json({ error: 'Contract not found' }, { status: 404 });

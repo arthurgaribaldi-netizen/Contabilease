@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -10,6 +10,7 @@
 'use client';
 
 import { AMORTIZATION_CONSTANTS } from '@/lib/constants/amortization';
+import { logger } from '@/lib/logger';
 import { IFRS16CalculationResult } from '@/lib/schemas/ifrs16-lease';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -48,30 +49,33 @@ export default function AmortizationScheduleTable({
   };
 
   // Fetch lazy data
-  const fetchLazyData = useCallback(async (page: number) => {
-    if (!contractId || !enableLazyLoading) return;
+  const fetchLazyData = useCallback(
+    async (page: number) => {
+      if (!contractId || !enableLazyLoading) return;
 
-    try {
-      setLoading(true);
-      setError(null);
+      try {
+        setLoading(true);
+        setError(null);
 
-      const response = await fetch(
-        `/api/contracts/${contractId}/amortization?page=${page}&limit=${itemsPerPage}`
-      );
+        const response = await fetch(
+          `/api/contracts/${contractId}/amortization?page=${page}&limit=${itemsPerPage}`
+        );
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch amortization data');
+        if (!response.ok) {
+          throw new Error('Failed to fetch amortization data');
+        }
+
+        const result = await response.json();
+        setLazyData(result.data);
+        setTotalPages(result.pagination.totalPages);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
       }
-
-      const result = await response.json();
-      setLazyData(result.data);
-      setTotalPages(result.pagination.totalPages);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  }, [contractId, enableLazyLoading, itemsPerPage]);
+    },
+    [contractId, enableLazyLoading, itemsPerPage]
+  );
 
   // Fetch summary data for lazy loading
   const fetchLazySummary = useCallback(async () => {
@@ -96,8 +100,26 @@ export default function AmortizationScheduleTable({
   // Load data on mount and page change
   useEffect(() => {
     if (enableLazyLoading && contractId) {
-      void fetchLazyData(currentPage);
-      void fetchLazySummary();
+      fetchLazyData(currentPage).catch(error => {
+        logger.error(
+          'Error fetching lazy data:',
+          {
+            component: 'amortizationscheduletable',
+            operation: 'fetchLazyData',
+          },
+          error as Error
+        );
+      });
+      fetchLazySummary().catch(error => {
+        logger.error(
+          'Error fetching lazy summary:',
+          {
+            component: 'amortizationscheduletable',
+            operation: 'fetchLazySummary',
+          },
+          error as Error
+        );
+      });
     }
   }, [enableLazyLoading, contractId, currentPage, fetchLazyData, fetchLazySummary]);
 
@@ -105,16 +127,14 @@ export default function AmortizationScheduleTable({
   const isLazyLoading = enableLazyLoading && contractId;
   const scheduleData = isLazyLoading ? lazyData : (calculationResult?.amortization_schedule ?? []);
   const summaryData = isLazyLoading ? lazySummary : calculationResult;
-  
-  const calculatedTotalPages = isLazyLoading 
-    ? totalPages 
+
+  const calculatedTotalPages = isLazyLoading
+    ? totalPages
     : Math.ceil((calculationResult?.amortization_schedule.length ?? 0) / itemsPerPage);
-  
+
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentSchedule = isLazyLoading 
-    ? scheduleData 
-    : scheduleData.slice(startIndex, endIndex);
+  const currentSchedule = isLazyLoading ? scheduleData : scheduleData.slice(startIndex, endIndex);
 
   const goToPage = (page: number) => {
     setCurrentPage(Math.max(1, Math.min(page, calculatedTotalPages)));
@@ -136,7 +156,7 @@ export default function AmortizationScheduleTable({
           <h3 className='text-lg font-medium text-gray-900'>Tabela de Amortização IFRS 16</h3>
         </div>
         <div className='flex items-center justify-center h-64'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600' />
+          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600' />
           <span className='ml-2 text-gray-600'>Carregando dados...</span>
         </div>
       </div>
@@ -152,8 +172,18 @@ export default function AmortizationScheduleTable({
         </div>
         <div className='flex items-center justify-center h-64'>
           <div className='text-red-600'>
-            <svg className='w-8 h-8 mx-auto mb-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' />
+            <svg
+              className='w-8 h-8 mx-auto mb-2'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+              />
             </svg>
             <p className='text-sm'>Erro ao carregar dados: {error}</p>
             <button
@@ -308,7 +338,10 @@ export default function AmortizationScheduleTable({
             <div>
               <span className='text-gray-500'>Taxa Efetiva:</span>
               <div className='font-medium text-gray-900'>
-                {(summaryData as any).effective_interest_rate_annual.toFixed(AMORTIZATION_CONSTANTS.DECIMAL_PLACES)}% a.a.
+                {(summaryData as any).effective_interest_rate_annual.toFixed(
+                  AMORTIZATION_CONSTANTS.DECIMAL_PLACES
+                )}
+                % a.a.
               </div>
             </div>
           </div>
@@ -339,14 +372,8 @@ export default function AmortizationScheduleTable({
               <div>
                 <p className='text-sm text-gray-700'>
                   Mostrando <span className='font-medium'>{startIndex + 1}</span> a{' '}
-                  <span className='font-medium'>
-                    {Math.min(endIndex, scheduleData.length)}
-                  </span>{' '}
-                  de{' '}
-                  <span className='font-medium'>
-                    {scheduleData.length}
-                  </span>{' '}
-                  períodos
+                  <span className='font-medium'>{Math.min(endIndex, scheduleData.length)}</span> de{' '}
+                  <span className='font-medium'>{scheduleData.length}</span> períodos
                 </p>
               </div>
               <div>
@@ -366,24 +393,39 @@ export default function AmortizationScheduleTable({
                   </button>
 
                   {/* Page numbers */}
-                  {Array.from({ length: Math.min(AMORTIZATION_CONSTANTS.MAX_PAGINATION_BUTTONS, calculatedTotalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, Math.min(calculatedTotalPages - AMORTIZATION_CONSTANTS.PAGINATION_OFFSET, currentPage - 2)) + i;
-                    if (pageNum > calculatedTotalPages) return null;
+                  {Array.from(
+                    {
+                      length: Math.min(
+                        AMORTIZATION_CONSTANTS.MAX_PAGINATION_BUTTONS,
+                        calculatedTotalPages
+                      ),
+                    },
+                    (_, i) => {
+                      const pageNum =
+                        Math.max(
+                          1,
+                          Math.min(
+                            calculatedTotalPages - AMORTIZATION_CONSTANTS.PAGINATION_OFFSET,
+                            currentPage - 2
+                          )
+                        ) + i;
+                      if (pageNum > calculatedTotalPages) return null;
 
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => goToPage(pageNum)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          pageNum === currentPage
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => goToPage(pageNum)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            pageNum === currentPage
+                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                  )}
 
                   <button
                     onClick={goToNextPage}

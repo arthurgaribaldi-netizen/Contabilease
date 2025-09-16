@@ -11,6 +11,7 @@ import { CACHE_TTL, ifrs16Cache } from '@/lib/cache/ifrs16-cache';
 import { BasicIFRS16Calculator } from '@/lib/calculations/ifrs16-basic';
 import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 // POST /api/contracts/[id]/calculate - Calculate IFRS 16 values for a contract
 export async function POST(_request: NextRequest, { params }: { params: { id: string } }) {
@@ -34,7 +35,10 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
       if (contractError.code === 'PGRST116') {
         return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
       }
-      console.error('Error fetching contract:', contractError);
+      logger.error('Error fetching contract:', {
+      component: 'route',
+      operation: 'operation'
+    }, contractError as Error);
       return NextResponse.json({ error: 'Failed to fetch contract' }, { status: 500 });
     }
 
@@ -93,7 +97,10 @@ export async function POST(_request: NextRequest, { params }: { params: { id: st
       cache_stats: ifrs16Cache.getStats(),
     });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    logger.error('Unexpected error:', {
+      component: 'route',
+      operation: 'operation'
+    }, error as Error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

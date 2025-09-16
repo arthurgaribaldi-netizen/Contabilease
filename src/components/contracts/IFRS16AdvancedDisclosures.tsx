@@ -2,19 +2,20 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import {
-  IFRS16AdvancedDisclosuresEngine,
   AdvancedDisclosures,
+  IFRS16AdvancedDisclosuresEngine,
 } from '@/lib/calculations/ifrs16-advanced-disclosures';
+import { logger } from '@/lib/logger';
 import { IFRS16CompleteData } from '@/lib/schemas/ifrs16-complete';
+import { useEffect, useState } from 'react';
 
 interface IFRS16AdvancedDisclosuresProps {
   contractData: IFRS16CompleteData;
@@ -39,7 +40,14 @@ export default function IFRS16AdvancedDisclosures({
         const result = engine.generateAdvancedDisclosures();
         setDisclosures(result);
       } catch (error) {
-        console.error('Error generating advanced disclosures:', error);
+        logger.error(
+          'Error generating advanced disclosures:',
+          {
+            component: 'ifrs16advanceddisclosures',
+            operation: 'generateAdvancedDisclosures',
+          },
+          error as Error
+        );
       } finally {
         setLoading(false);
       }

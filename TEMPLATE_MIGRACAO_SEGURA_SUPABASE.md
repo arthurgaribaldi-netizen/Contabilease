@@ -471,3 +471,4 @@ Uma migração bem-sucedida deve:
 **Template criado em:** 2025-01-27  
 **Versão do template:** 1.0.0  
 **Compatibilidade:** Supabase PostgreSQL 15+
+

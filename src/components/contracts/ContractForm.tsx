@@ -2,7 +2,7 @@
  * @copyright 2025 Contabilease. All rights reserved.
  * @license Proprietary - See LICENSE.txt
  * @author Arthur Garibaldi <arthurgaribaldi@gmail.com>
- * 
+ *
  * This file contains proprietary Contabilease software components.
  * Unauthorized copying, distribution, or modification is prohibited.
  */
@@ -10,6 +10,7 @@
 'use client';
 
 import { Contract } from '@/lib/contracts';
+import { logger } from '@/lib/logger';
 import { contractSchema, type ContractFormData } from '@/lib/schemas/contract';
 import { useState } from 'react';
 import { z } from 'zod';
@@ -101,7 +102,14 @@ export default function ContractForm({
         });
         setErrors(newErrors);
       } else {
-        console.error('Error submitting form:', error);
+        logger.error(
+          'Error submitting form:',
+          {
+            component: 'contractform',
+            operation: 'submitForm',
+          },
+          error as Error
+        );
         setErrors({ general: 'Erro inesperado. Tente novamente.' });
       }
     }

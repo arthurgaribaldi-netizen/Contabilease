@@ -34,7 +34,7 @@ export function LoadingSkeleton({
       transition: {
         duration: 1.5,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
     wave: {
@@ -44,7 +44,7 @@ export function LoadingSkeleton({
       transition: {
         duration: 1.5,
         repeat: Infinity,
-        ease: 'linear',
+        ease: 'linear' as const,
       },
     },
   };

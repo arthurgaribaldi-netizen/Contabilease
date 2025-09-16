@@ -1,3 +1,4 @@
+import { logger } from '../logger';
 import { supabase } from '../supabase';
 
 /**
@@ -64,7 +65,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Sign up error:', error);
+      await logger.error(
+        'Sign up error',
+        { component: 'auth', operation: 'signUp' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -81,7 +86,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Sign in error:', error);
+      await logger.error(
+        'Sign in error',
+        { component: 'auth', operation: 'signIn' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -100,7 +109,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Magic link error:', error);
+      await logger.error(
+        'Magic link error',
+        { component: 'auth', operation: 'signInWithMagicLink' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -119,7 +132,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Google sign in error:', error);
+      await logger.error(
+        'Google sign in error',
+        { component: 'auth', operation: 'signInWithGoogle' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -132,7 +149,11 @@ export const authHelpers = {
 
       return { error: null };
     } catch (error) {
-      console.error('Sign out error:', error);
+      await logger.error(
+        'Sign out error',
+        { component: 'auth', operation: 'signOut' },
+        error as Error
+      );
       return { error };
     }
   },
@@ -148,7 +169,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Password reset error:', error);
+      await logger.error(
+        'Password reset error',
+        { component: 'auth', operation: 'resetPassword' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -164,7 +189,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Password update error:', error);
+      await logger.error(
+        'Password update error',
+        { component: 'auth', operation: 'updatePassword' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -184,7 +213,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Profile update error:', error);
+      await logger.error(
+        'Profile update error',
+        { component: 'auth', operation: 'updateProfile' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -192,13 +225,20 @@ export const authHelpers = {
   // Get current user
   getCurrentUser: async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
       if (error) throw error;
 
       return { user, error: null };
     } catch (error) {
-      console.error('Get user error:', error);
+      await logger.error(
+        'Get user error',
+        { component: 'auth', operation: 'getCurrentUser' },
+        error as Error
+      );
       return { user: null, error };
     }
   },
@@ -206,13 +246,20 @@ export const authHelpers = {
   // Get current session
   getCurrentSession: async () => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
 
       if (error) throw error;
 
       return { session, error: null };
     } catch (error) {
-      console.error('Get session error:', error);
+      await logger.error(
+        'Get session error',
+        { component: 'auth', operation: 'getCurrentSession' },
+        error as Error
+      );
       return { session: null, error };
     }
   },
@@ -234,7 +281,11 @@ export const authHelpers = {
 
       return { data, error: null };
     } catch (error) {
-      console.error('Email verification error:', error);
+      await logger.error(
+        'Email verification error',
+        { component: 'auth', operation: 'verifyEmail' },
+        error as Error
+      );
       return { data: null, error };
     }
   },
@@ -280,7 +331,11 @@ export const sessionManager = {
         if (error) throw error;
         return data.session;
       } catch (error) {
-        console.error('Session refresh error:', error);
+        await logger.error(
+          'Session refresh error',
+          { component: 'auth', operation: 'refreshSession' },
+          error as Error
+        );
         return null;
       }
     }
