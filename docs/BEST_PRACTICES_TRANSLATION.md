@@ -246,3 +246,5 @@ if (!trimmedEmail || !validateEmail(trimmedEmail)) {
 ---
 
 **Desenvolvido com ❤️ pela equipe Contabilease**
+
+

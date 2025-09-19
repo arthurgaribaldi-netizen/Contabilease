@@ -143,3 +143,5 @@ export function validateMagicLinkTranslations(): ValidationResult {
 
   return result;
 }
+
+

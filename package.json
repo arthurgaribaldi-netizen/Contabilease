@@ -32,6 +32,10 @@
     "audit-ci": "npx audit-ci --moderate",
     "vercel-check": "node scripts/vercel-pre-deploy-check.js",
     "supabase-check": "node scripts/verify-supabase-config.js",
+    "setup-env": "node scripts/setup-env.js",
+    "verify-env": "node scripts/verify-env.js",
+    "env-check": "node scripts/verify-env.js",
+    "test-stripe": "node scripts/test-stripe-connection.js",
     "prepare": "husky install",
     "postinstall": "husky install"
   },
