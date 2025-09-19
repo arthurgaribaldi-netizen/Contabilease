@@ -2,7 +2,11 @@
   "extends": ["next/core-web-vitals"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": ["./tsconfig.json", "./tsconfig.test.json"]
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
   },
   "plugins": ["@typescript-eslint", "react", "react-hooks", "jsx-a11y", "jest", "testing-library"],
   "rules": {

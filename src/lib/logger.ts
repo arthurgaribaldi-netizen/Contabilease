@@ -195,8 +195,6 @@ export interface LoggerConfig {
   enableFile: boolean;
   enableRemote: boolean;
   enableStructured: boolean;
-  maxFileSize: number;
-  maxFiles: number;
   remoteEndpoint?: string;
   remoteApiKey?: string;
   component: string;
@@ -212,11 +210,9 @@ class StructuredLogger {
     this.config = {
       level: this.getLogLevelFromEnv(),
       enableConsole: process.env.NODE_ENV !== 'production',
-      enableFile: process.env.NODE_ENV === 'production',
+      enableFile: false, // Disabled for client-side compatibility
       enableRemote: process.env.NODE_ENV === 'production',
       enableStructured: true,
-      maxFileSize: 10 * 1024 * 1024, // 10MB
-      maxFiles: 5,
       remoteEndpoint: process.env.LOG_ENDPOINT,
       remoteApiKey: process.env.LOG_API_KEY,
       component: 'contabilease',
@@ -335,61 +331,8 @@ class StructuredLogger {
   }
 
   private async logToFile(entry: LogEntry): Promise<void> {
-    if (!this.config.enableFile || typeof window !== 'undefined') return;
-
-    try {
-      // Only run on server side
-      if (typeof window !== 'undefined' || typeof process === 'undefined') return;
-
-      const fs = require('fs').promises;
-      const path = require('path');
-
-      const logDir = path.join(process.cwd(), 'logs');
-      const logFile = path.join(logDir, `${entry.level}.log`);
-
-      // Criar diretório se não existir
-      await fs.mkdir(logDir, { recursive: true });
-
-      // Verificar tamanho do arquivo e rotacionar se necessário
-      await this.rotateLogFile(logFile);
-
-      const logLine = this.formatLogEntry(entry) + '\n';
-      await fs.appendFile(logFile, logLine);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to write to log file:', error);
-    }
-  }
-
-  private async rotateLogFile(logFile: string): Promise<void> {
-    try {
-      // Only run on server side
-      if (typeof window !== 'undefined' || typeof process === 'undefined') return;
-
-      const fs = require('fs').promises;
-      const path = require('path');
-
-      const stats = await fs.stat(logFile).catch(() => null);
-      if (!stats || stats.size < this.config.maxFileSize) return;
-
-      // Rotacionar arquivos
-      for (let i = this.config.maxFiles - 1; i > 0; i--) {
-        const oldFile = `${logFile}.${i}`;
-        const newFile = `${logFile}.${i + 1}`;
-
-        try {
-          await fs.rename(oldFile, newFile);
-        } catch {
-          // Arquivo não existe, continuar
-        }
-      }
-
-      // Mover arquivo atual
-      await fs.rename(logFile, `${logFile}.1`);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to rotate log file:', error);
-    }
+    // File logging disabled for client-side compatibility
+    return;
   }
 
   private async logToRemote(entry: LogEntry): Promise<void> {
@@ -466,11 +409,18 @@ class StructuredLogger {
   // Métodos públicos
   async error(
     message: string,
-    context?: LogContext,
+    context?: LogContext | Error | unknown,
     error?: Error,
     metadata?: Record<string, unknown>
   ): Promise<void> {
-    await this.log(LogLevel.ERROR, message, context, error, metadata);
+    // Handle case where context is actually an Error object
+    if (context instanceof Error) {
+      await this.log(LogLevel.ERROR, message, undefined, context, metadata);
+    } else if (typeof context === 'object' && context !== null) {
+      await this.log(LogLevel.ERROR, message, context as LogContext, error, metadata);
+    } else {
+      await this.log(LogLevel.ERROR, message, undefined, error, metadata);
+    }
   }
 
   async warn(

@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         traceId,
         eventCount: traceEvents.length,
         operations: traceEvents.map(e => e.name),
-        duration: this.calculateTraceDuration(traceEvents),
+        duration: calculateTraceDuration(traceEvents) || undefined,
       });
 
       // Aqui você pode integrar com serviços como:

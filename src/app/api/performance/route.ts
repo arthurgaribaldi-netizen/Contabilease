@@ -56,9 +56,6 @@ export async function POST(request: NextRequest) {
         operation: 'POST',
         sessionId: payload.sessionId,
         metricCount: processedMetrics.length,
-      },
-      undefined,
-      {
         metrics: processedMetrics,
       }
     );
@@ -207,9 +204,6 @@ async function storeCriticalMetrics(metrics: PerformanceMetric[]) {
       {
         component: 'performance-api',
         operation: 'storeCriticalMetrics',
-      },
-      undefined,
-      {
         criticalMetrics,
       }
     );
